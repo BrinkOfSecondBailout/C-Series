@@ -1,20 +1,47 @@
 #include <stdio.h>
 
 int main() {
-    int first = 1;
-    int val, maxval, minval;
-    while(scanf("%d", &val) != EOF) {
-        if (first || val > maxval) maxval = val;
-        if (first || val < minval) minval = val;
-        first = 0;
-    }
+    int mymult();
+    int retval;
 
-    printf("Maximum %d\n", maxval);
-    printf("Minimum %d\n", minval);
+    retval = mymult(6, 7);
+    printf("Answer: %d\n", retval);
+}
+
+int mymult(a, b)
+    int a, b;
+{
+    int c = a * b;
+    return c;
 }
 
 
 
+
+    // int guess;
+    // while(scanf("%d", &guess) != EOF) {
+    //     if (guess == 42) {
+    //         printf("Nice work!\n");
+    //         break;
+    //     }
+    //     else if (guess < 42) {
+    //         printf("Too low\n");
+    //     }
+    //     else {
+    //         printf("Too high\n");
+    //     }
+    // }
+
+    // int first = 1;
+    // int val, maxval, minval;
+    // while(scanf("%d", &val) != EOF) {
+    //     if (first || val > maxval) maxval = val;
+    //     if (first || val < minval) minval = val;
+    //     first = 0;
+    // }
+
+    // printf("Maximum %d\n", maxval);
+    // printf("Minimum %d\n", minval);
 
     // int i;
     // for (i=0; i<5; i++) {
