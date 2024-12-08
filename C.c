@@ -1,8 +1,10 @@
 #include <stdio.h>
 
 int main() {
-    
-    return 0;
+    int i;
+    for (i=0; i<5; i++) {
+        printf("%d\n", i);
+    }
 }
 
 
@@ -11,6 +13,13 @@ int main() {
 
 
 
+    // char line[1000];
+    // FILE *hand;
+    // hand = fopen("romeo.txt", "r");
+    // while( fgets(line, 1000, hand) != NULL) {
+    //     printf("%s", line);
+    // }
+    // fclose(hand);
 
     // char line[1000];
     // printf("Enter line\n");
