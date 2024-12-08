@@ -1,17 +1,25 @@
 #include <stdio.h>
 
 int main() {
-    int i;
-    for (i=0; i<5; i++) {
-        printf("%d\n", i);
+    int first = 1;
+    int val, maxval, minval;
+    while(scanf("%d", &val) != EOF) {
+        if (first || val > maxval) maxval = val;
+        if (first || val < minval) minval = val;
+        first = 0;
     }
+
+    printf("Maximum %d\n", maxval);
+    printf("Minimum %d\n", minval);
 }
 
 
 
 
-
-
+    // int i;
+    // for (i=0; i<5; i++) {
+    //     printf("%d\n", i);
+    // }
 
     // char line[1000];
     // FILE *hand;
