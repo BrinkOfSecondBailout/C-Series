@@ -1,21 +1,97 @@
 #include <stdio.h>
 
-int main() {
-    int mymult();
-    int retval;
-
-    retval = mymult(6, 7);
-    printf("Answer: %d\n", retval);
-}
-
-int mymult(a, b)
-    int a, b;
-{
-    int c = a * b;
-    return c;
-}
 
 
+
+
+
+
+// int main() {
+//     char x[] = "Hello";
+//     int find_length();
+//     int length = find_length(x);
+//     void reverse_string();
+//     reverse_string(length, x);
+//     printf("%s\n", x);
+// }
+
+// int find_length(string)
+//     char string[];
+// {
+//     int i;
+//     int length = 0;
+//     for (i=0; string[i]; i++) {
+//         length++;
+//     }
+
+//     return length;
+// }
+
+// void reverse_string(length, string)
+//     int length;
+//     char string[]; {
+//         int last = length - 1;
+//         int i;
+//         char temp;
+//         if (length % 2 == 0) {
+//             for (i = 0; i <= last; i++) {
+//                 temp = string[i];
+//                 string[i] = string[last];
+//                 string[last] = temp;
+//                 last--;
+//             }
+//         } else {
+//             for (i = 0; i <= last; i++) {
+//                 if (i != last) {
+//                     temp = string[i];
+//                     string[i] = string[last];
+//                     string[last] = temp;
+//                     last--;
+//                 }
+//             }
+//         }
+//     }
+
+// int main() {
+//     char x[] = "Hello";
+//     int py_len();
+//     printf("%s %d\n", x, py_len(x));
+// }
+
+// int py_len(self)
+//     char self[];
+// {
+//     int i;
+//     for (i=0; self[i]; i++);
+//     return i;
+// }
+
+    // char x[3];
+    // x[0] = 'H';
+    // x[1] = 'O';
+    // x[2] = 'E';
+
+    // printf("%s\n", x);
+
+    // char x[10];
+    // int i;
+    // for (i=0; i<100; i++) x[i] = '*';
+    // printf("%s\n", x);
+
+// int main() {
+//     int mymult();
+//     int retval;
+
+//     retval = mymult(6, 7);
+//     printf("Answer: %d\n", retval);
+// }
+
+// int mymult(a, b)
+//     int a, b;
+// {
+//     int c = a * b;
+//     return c;
+// }
 
 
     // int guess;
