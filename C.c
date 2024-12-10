@@ -1,6 +1,82 @@
 #include <stdio.h>
 
+#define YES 1
+#define NO 0
 
+int main() {
+    int c, nl, nw, nc, inword;
+
+    inword = NO;
+    nl = nw = nc = 0;
+    while ((c = getchar()) != EOF) {
+        ++nc;
+        if (c == '\n')
+            ++nl;
+        if (c == ' ' || c == '\n' || c == '\t')
+            inword = NO;
+        else if (inword == NO) {
+            inword = YES;
+            ++nw;
+        }
+    }
+
+    printf("%d %d %d\n", nl, nw, nc);
+}
+
+
+
+// int main() {
+//     int c, prev = 0;
+
+//     while ((c = getchar()) != EOF) {
+//         if (c == ' ' && prev == ' ')
+//             continue;
+//         putchar(c);
+//         prev = c;
+//     }
+// }
+
+
+// int main() {
+//     int c, blanks;
+
+//     blanks = 0;
+
+//     while ((c = getchar()) != EOF)
+//         if (c == ' ')
+//             ++blanks;
+//     printf("%d\n", blanks);
+// }
+
+
+// int main() {
+//     int c, nl;
+
+//     nl = 0;
+//     while ((c = getchar()) != EOF)
+//         if (c == '\n')
+//             ++nl;
+//     printf("%d\n", nl);
+// }
+
+
+// int main() {
+//     double nc;
+//     int c;
+//     while ((c = getchar()) != EOF) {
+//         if (c != '\n')
+//             ++nc;
+//     }
+//     printf("%.0f\n",nc);
+// }
+
+// int main() {
+//     long nc;
+//     nc = 0;
+//     while (getchar() != EOF)
+//         ++nc;
+//     printf("%ld\n", nc);
+// }
 
 
 // int main() {
