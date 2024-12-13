@@ -1,6 +1,63 @@
 #include <stdio.h>
 
 
+int main() {
+    int bitcount(unsigned n);
+    printf("%d", bitcount(5255));
+}
+
+int bitcount(n)
+unsigned n;
+{
+    int b;
+
+    for (b = 0; n != 0; n >>=1 )
+        if (n & 01)
+            b++;
+    return(b);
+}
+
+
+
+
+// char* strcat(char s[], char t[]);
+
+// int main() {
+//     char s[] = "hello";
+//     char t[] = "world";
+//     printf("%s\n", strcat(s, t));
+// }
+
+// char* strcat(char s[], char t[]) {
+//     int i, j;
+//     i = j = 0;
+//     while (s[i] != '\0')
+//         i++;
+//     while ((s[i++] = t[j++]) != '\0')
+//         ;
+//     return s;
+// }
+
+
+// int main() {
+//     char* squeeze(char s[], int c);
+//     char str[] = "hello";
+//     squeeze(str, 'l');
+//     printf("%s\n", str);
+// }
+
+// char* squeeze(char s[], int c) {
+//     int i, j;
+    
+//     for (i = j = 0; s[i] != '\0'; i++)
+//         if (s[i] != c)
+//             s[j++] = s[i];
+//     s[j] = '\0';
+//     return s;
+// }
+
+
+
 // #define N 4
 
 // void detab();
