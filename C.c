@@ -1,21 +1,280 @@
 #include <stdio.h>
 
 
-int main() {
-    int bitcount(unsigned n);
-    printf("%d", bitcount(5255));
-}
-
-int bitcount(n)
-unsigned n;
+double atof(s) /* convert string to double */
+char s[];
 {
-    int b;
+    double val, power;
+    int i, sign;
 
-    for (b = 0; n != 0; n >>=1 )
-        if (n & 01)
-            b++;
-    return(b);
+    for (i = 0; s[i] == ' ' || s[i] == '\n' || s[i] == '\t'; i++)
+        ; /* skip white space */
+    sign = 1;
+    if (s[i] == '+' || s[i] == '-') /* sign */
+        sign = (s[i++]=='+') ? 1 : -1;
+    for (val = 0; s[i] >= '0' && s[i] <= '9'; i++)
+        val = 10 * val + s[i] - '0';
+    if (s[i] == '.')
+        i++;
+    for (power = 1; s[i] >= '0' && s[i] <= '9'; i++) {
+        val = 10 * val + s[i] - '0';
+        power *= 10;
+    }
+    return(sign * val / power);
 }
+
+
+
+
+
+
+
+
+// #define MAXLINE 1000
+
+// int main() {
+//     char line[MAXLINE];
+
+//     while (get_line(line, MAXLINE) > 0)
+//         if (index(line, "the") >= 0)
+//             printf("%s\n", line);
+// }
+
+// int get_line(s, lim)
+// char s[];
+// int lim;
+// {
+//     int c, i;
+
+//     for (i = 0; i < lim - 1 && (c = getchar()) != EOF && c != '\n'; ++i)
+//         s[i] = c;
+//     if (c == '\n') {
+//         s[i] = c;
+//         ++i;
+//     }
+//     s[i] = '\0';
+//     return(i);
+// }
+
+// int index(s, t)
+// char s[], t[];
+// {
+//     int i, j, k;
+
+//     for (i = 0; s[i] != '\0'; i++) {
+//         for (j = i, k = 0; t[k] != '\0' && s[j] == t[k]; j++, k++)
+//             ;
+//         if (t[k] == '\0')
+//             return(i);
+//     }
+//     return(-1);
+// }
+
+
+
+
+
+
+
+
+
+// void itoa(char s[], int n);
+// void printBinary(int binary);
+// void reverse(char s[]);
+// int strlen(char s[]);
+
+// int main()
+// {
+//     char s[12];
+//     int n = 200;
+//     printBinary(n);
+// }
+
+// void printBinary(int binary) {
+//     printf("%d\n", binary);
+//     for (int i = 31; i >= 0; i--) {
+//         printf("%d", (binary >> i) & 1);
+//         if (i % 4 == 0) printf(" ");
+//     }
+//     printf("\n");
+// }
+
+// void itoa(char s[], int n) {
+//     int i, sign;
+
+//     if ((sign = n) < 0)
+//         n = -n;
+//     i = 0;
+
+//     do {
+//         s[i++] = n % 10 + '0';
+//     } while ((n /= 10) > 0);
+
+//     if (sign < 0)
+//         s[i++] = '-';
+//     s[i] = '\0';
+//     reverse(s);
+// }
+
+
+// void reverse(char s[])  /* reverse string s in place */
+// {
+//     int c, i, j;
+
+//     for (i = 0, j = strlen(s) - 1; i < j; i++, j--) {
+//         c = s[i];
+//         s[i] = s[j];
+//         s[j] = c;
+//     }
+// }
+
+// /* strlen: return length of s */
+// int strlen(char s[])
+// {
+//     int i = 0;
+//     while (s[i] != '\0')
+//         ++i;
+//     return i;
+// }
+
+
+
+
+
+// void shell(int v[], int n) { /* sort v[0]...v[n-1] into increasing order */
+//     int gap, i, j, temp;
+
+//     for (gap = n/2; gap > 0; gap /= 2)
+//         for (i = gap; i < n; i++)
+//             for (j = i - gap; j >= 0 && v[j] > v[j + gap]; j -= gap) {
+//                 temp = v[j];
+//                 v[j] = v[j + gap];
+//                 v[j + gap] = temp;
+//             }
+// }
+
+
+
+
+
+// int atoi(char s[]);
+
+// int main() {
+//     char str[] = "-123";
+
+//     printf("%d\n", atoi(str));
+// }
+
+
+// int atoi(char s[]) /* convert numeric strings to integer */
+// {
+//     int i, n, sign;
+
+//     for (i = 0; s[i]==' ' || s[i]=='\n' || s[i]=='\t'; i++)
+//         ; /* skip white spaces */
+//     sign = 1;
+//     if (s[i] == '+' || s[i] == '-') /* sign */
+//         sign = (s[i++]=='+') ? 1 : -1;
+//     for (n = 0; s[i] >= '0' && s[i] <= '9'; i++)
+//         n = 10 * n + s[i] - '0';
+//     return (sign * n);
+// } 
+
+
+
+
+
+// int main() { /* count digits, white space, others */
+//     int c, i, nwhite, nother, ndigit[10];
+
+//     nwhite = nother = 0;
+//     for (i = 0; i < 10; i++)
+//         ndigit[i] = 0;
+
+//     while ((c = getchar()) != EOF)
+//         switch (c) {
+//             case '0':
+//             case '1':
+//             case '2':
+//             case '3':
+//             case '4':
+//             case '5':
+//             case '6':
+//             case '7':
+//             case '8':
+//             case '9':
+//                 ndigit[c-'0']++;
+//                 break;
+//             case ' ':
+//             case '\n':
+//             case '\t':
+//                 nwhite++;
+//                 break;
+//             default:
+//                 nother++;
+//                 break;
+//         }
+
+//     printf("digits =");
+//     for (i = 0; i < 10; i++)
+//         printf(" %d", ndigit[i]);
+//     printf("\nwhite space = %d, other = %d\n", nwhite, nother);
+// }
+
+
+
+
+
+
+
+// int binary(int x, int v[], int n);
+
+// int main() {
+//     int v[] = {1, 5, 19, 20};
+//     printf("%d\n", binary(5, v, 4));
+// }
+
+// int binary(x, v, n) /* find x in v[0] ... v[n - 1] */
+// int x, v[], n;
+// {
+//     int low, high, mid;
+
+//     low = 0;
+//     high = n - 1;
+//     while (low <= high)
+//     {
+//         mid = (low+high) / 2;
+//         if (x < v[mid])
+//             high = mid - 1;
+//         else if (x > v[mid])
+//             low = mid + 1;
+//         else /* found match */
+//             return (mid);
+//     }
+//     return(-1);
+// }
+
+
+
+
+
+
+
+// int main() {
+//     int bitcount(unsigned n);
+//     printf("%d", bitcount(5255));
+// }
+
+// int bitcount(n)
+// unsigned n;
+// {
+//     int b;
+
+//     for (b = 0; n != 0; n >>=1 )
+//         if (n & 01)
+//             b++;
+//     return(b);
+// }
 
 
 
