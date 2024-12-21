@@ -4,13 +4,64 @@
 #define NUMBER '0' /* signal that number found */
 #define TOOBIG '9' /* signal that string is too big */
 #define MAXVAL 100 /* maximum depth of val stack */
+#define BUFSIZE 100
+
+char buf[BUFSIZE]; /* buffer for ungetch */
+int bufp = 0; /* next free position in buf */
 
 int sp = 0; /* stack pointer */
 double val[MAXVAL]; /* value stack */
 
+int getch() /* get a (possibly pushed back) character */
+{
+    return ((bufp > 0) ? buf[--bufp] : getchar());
+}
+
+int ungetch(c) /* push character back on input */
+int c;
+{
+    if (bufp > BUFSIZE)
+        printf("ungetch: too many characters\n");
+    else
+        buf[bufp++] = c;
+}
+
 int clear()
 {
     sp = 0;
+}
+
+int getop(s, lim) /* get next operator or operand */
+char s[];
+int lim;
+{
+    int i, c;
+
+    while ((c = getch()) == ' ' || c == '\t' || c == '\n')
+        ;
+    if (c != '.' && (c < '0' || c > '9'))
+        return (c);
+    s[0] = c;
+    for (i = 1; (c = getchar()) >= '0' && c <= '9'; i++)
+        if (i < lim)
+            s[i] = c;
+    if (c == '.') { /* collect fraction */
+        if (i < lim)
+            s[i] = c;
+        for (i++; (c=getchar()) >= '0' && c <= '9'; i++)
+            if (i < lim)
+                s[i] = c;
+    }
+    if (i < lim) { /* number is ok */
+        ungetch(c);
+        s[i] = '\0';
+        return (NUMBER);
+    } else { /* it's too big; skip rest of the line */
+        while (c != '\n' && c != EOF)
+            c = getchar();
+        s[lim - 1] = '\0';
+        return(TOOBIG);
+    }
 }
 
 double push(double f) /* push f onto value stack */
@@ -75,6 +126,7 @@ int main() {
                 break;
         }
 }
+
 
 
 double atof(s) /* convert string to double */
