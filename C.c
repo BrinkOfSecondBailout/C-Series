@@ -1,155 +1,285 @@
 #include <stdio.h>
 
-#define MAXOP 20 /* max size of operand, operator */
-#define NUMBER '0' /* signal that number found */
-#define TOOBIG '9' /* signal that string is too big */
-#define MAXVAL 100 /* maximum depth of val stack */
-#define BUFSIZE 100
-
-char buf[BUFSIZE]; /* buffer for ungetch */
-int bufp = 0; /* next free position in buf */
-
-int sp = 0; /* stack pointer */
-double val[MAXVAL]; /* value stack */
-
-int getch() /* get a (possibly pushed back) character */
-{
-    return ((bufp > 0) ? buf[--bufp] : getchar());
-}
-
-int ungetch(c) /* push character back on input */
-int c;
-{
-    if (bufp > BUFSIZE)
-        printf("ungetch: too many characters\n");
-    else
-        buf[bufp++] = c;
-}
-
-int clear()
-{
-    sp = 0;
-}
-
-int getop(s, lim) /* get next operator or operand */
-char s[];
-int lim;
-{
-    int i, c;
-
-    while ((c = getch()) == ' ' || c == '\t' || c == '\n')
-        ;
-    if (c != '.' && (c < '0' || c > '9'))
-        return (c);
-    s[0] = c;
-    for (i = 1; (c = getchar()) >= '0' && c <= '9'; i++)
-        if (i < lim)
-            s[i] = c;
-    if (c == '.') { /* collect fraction */
-        if (i < lim)
-            s[i] = c;
-        for (i++; (c=getchar()) >= '0' && c <= '9'; i++)
-            if (i < lim)
-                s[i] = c;
-    }
-    if (i < lim) { /* number is ok */
-        ungetch(c);
-        s[i] = '\0';
-        return (NUMBER);
-    } else { /* it's too big; skip rest of the line */
-        while (c != '\n' && c != EOF)
-            c = getchar();
-        s[lim - 1] = '\0';
-        return(TOOBIG);
-    }
-}
-
-double push(double f) /* push f onto value stack */
-{
-    if (sp < MAXVAL)
-        return(val[sp++] = f);
-    else {
-        printf("error: stack full\n");
-        clear();
-        return(0);
-    }
-}
-
-double pop() {
-    if (sp > 0)
-        return(val[--sp]);
-    else {
-        printf("error: stack empty\n");
-        clear();
-        return(0);
-    }
-}
-
-int main() {
-    int type;
-    char s[MAXOP];
-    double op2;
-
-    while ((type = getop(s, MAXOP)) != EOF)
-        switch (type) {
-            case NUMBER:
-                push(atof(s));
-                break;
-            case '+':
-                push(pop() + pop());
-                break;
-            case '*':
-                push(pop() * pop());
-                break;
-            case '-':
-                op2 = pop();
-                push(pop() - op2);
-                break;
-            case '/':
-                op2 = pop();
-                if (op2 != 0.0)
-                    push(pop() / op2);
-                else
-                    printf("zero divisor popped\n");
-                break;
-            case '=':
-                printf("\t%f\n", push(pop()));
-                break;
-            case 'c':
-                clear();
-                break;
-            case TOOBIG:
-                printf("%.20s ... is too long\n", s);
-                break;
-            default:
-                printf("unknown command %c\n", type);
-                break;
-        }
-}
 
 
 
-double atof(s) /* convert string to double */
-char s[];
-{
-    double val, power;
-    int i, sign;
 
-    for (i = 0; s[i] == ' ' || s[i] == '\n' || s[i] == '\t'; i++)
-        ; /* skip white space */
-    sign = 1;
-    if (s[i] == '+' || s[i] == '-') /* sign */
-        sign = (s[i++]=='+') ? 1 : -1;
-    for (val = 0; s[i] >= '0' && s[i] <= '9'; i++)
-        val = 10 * val + s[i] - '0';
-    if (s[i] == '.')
-        i++;
-    for (power = 1; s[i] >= '0' && s[i] <= '9'; i++) {
-        val = 10 * val + s[i] - '0';
-        power *= 10;
-    }
-    return(sign * val / power);
-}
+
+// int main() {
+//     int x, y;
+//     x = 10;
+//     y = 20;
+//     void swap();
+//     swap(&x, &y);
+//     printf("x: %d\n", x);
+//     printf("y: %d\n", y);
+// }
+
+// void swap(int *x, int *y) {
+//     int temp;
+
+//     temp = *x;
+//     *x = *y;
+//     *y = temp;
+// }
+
+
+
+
+
+
+
+
+// int main() {
+//     int x = 42;  // A regular variable
+//     int *p = &x; // p holds the address of x
+
+//     printf("*p = %d\n", *p); // Output: *p = 42
+//     *p = 100;                // Change the value at the address stored in p
+//     printf("x = %d\n", x);   // Output: x = 100
+// }
+
+
+
+
+
+// int main() {
+//     char ca[10], *cp;
+//     int ia[10], *ip;
+
+//     cp = ca + 1;
+//     ip = ia + 1;
+
+//     printf("ca %p cp %p\n", ca, cp);
+//     printf("ia %p ip %p\n", ia, ip);
+// }
+
+
+
+
+
+
+// int main() {
+//     int x, y;
+//     int* px;
+
+//     x = 42;
+//     px = &x;
+//     y = *px;
+//     printf("%d %p %d\n", x, px, y);
+// }
+
+
+// int main() {
+//     int x, y;
+//     void func();
+
+//     x = 42;
+//     y = 43;
+//     printf("main x=%d y=%d\n", x, y);
+//     func(x, &y);
+//     printf("back x=%d y=%d\n", x, y);
+// }
+
+// void func(a, pb)
+//     int a, *pb;
+// {
+//     a = 1;
+//     *pb = a;
+// }
+
+
+
+
+
+
+
+// printd(int n) {
+//     /* print n in decimal */
+//     char s[10];
+//     int i;
+
+//     if (n < 0) {
+//         putchar('-');
+//         n = -n;
+//     }
+
+//     i = 0;
+//     do {
+//         s[i++] = n % 10 + '0'; /* get next char */
+//     } while ((n /= 10) > 0); /* discard it */
+
+//     while (--i >= 0)
+//         putchar(s[i]);
+// }
+
+// recursiveprint(int n) {
+//     int i;
+
+//     if (n < 0) {
+//         putchar('-');
+//         n = -n;
+//     }
+
+//     if ((i = n/10) != 0)
+//         recursiveprint(i);
+
+//     putchar(n % 10 + '0');
+// }
+
+
+
+
+// #define MAXOP 20 /* max size of operand, operator */
+// #define NUMBER '0' /* signal that number found */
+// #define TOOBIG '9' /* signal that string is too big */
+// #define MAXVAL 100 /* maximum depth of val stack */
+// #define BUFSIZE 100
+
+// char buf[BUFSIZE]; /* buffer for ungetch */
+// int bufp = 0; /* next free position in buf */
+
+// int sp = 0; /* stack pointer */
+// double val[MAXVAL]; /* value stack */
+
+// int getch() /* get a (possibly pushed back) character */
+// {
+//     return ((bufp > 0) ? buf[--bufp] : getchar());
+// }
+
+// int ungetch(c) /* push character back on input */
+// int c;
+// {
+//     if (bufp > BUFSIZE)
+//         printf("ungetch: too many characters\n");
+//     else
+//         buf[bufp++] = c;
+// }
+
+// int clear()
+// {
+//     sp = 0;
+// }
+
+// int getop(s, lim) /* get next operator or operand */
+// char s[];
+// int lim;
+// {
+//     int i, c;
+
+//     while ((c = getch()) == ' ' || c == '\t' || c == '\n')
+//         ;
+//     if (c != '.' && (c < '0' || c > '9'))
+//         return (c);
+//     s[0] = c;
+//     for (i = 1; (c = getchar()) >= '0' && c <= '9'; i++)
+//         if (i < lim)
+//             s[i] = c;
+//     if (c == '.') { /* collect fraction */
+//         if (i < lim)
+//             s[i] = c;
+//         for (i++; (c=getchar()) >= '0' && c <= '9'; i++)
+//             if (i < lim)
+//                 s[i] = c;
+//     }
+//     if (i < lim) { /* number is ok */
+//         ungetch(c);
+//         s[i] = '\0';
+//         return (NUMBER);
+//     } else { /* it's too big; skip rest of the line */
+//         while (c != '\n' && c != EOF)
+//             c = getchar();
+//         s[lim - 1] = '\0';
+//         return(TOOBIG);
+//     }
+// }
+
+// double push(double f) /* push f onto value stack */
+// {
+//     if (sp < MAXVAL)
+//         return(val[sp++] = f);
+//     else {
+//         printf("error: stack full\n");
+//         clear();
+//         return(0);
+//     }
+// }
+
+// double pop() {
+//     if (sp > 0)
+//         return(val[--sp]);
+//     else {
+//         printf("error: stack empty\n");
+//         clear();
+//         return(0);
+//     }
+// }
+
+// int main() {
+//     int type;
+//     char s[MAXOP];
+//     double op2;
+
+//     while ((type = getop(s, MAXOP)) != EOF)
+//         switch (type) {
+//             case NUMBER:
+//                 push(atof(s));
+//                 break;
+//             case '+':
+//                 push(pop() + pop());
+//                 break;
+//             case '*':
+//                 push(pop() * pop());
+//                 break;
+//             case '-':
+//                 op2 = pop();
+//                 push(pop() - op2);
+//                 break;
+//             case '/':
+//                 op2 = pop();
+//                 if (op2 != 0.0)
+//                     push(pop() / op2);
+//                 else
+//                     printf("zero divisor popped\n");
+//                 break;
+//             case '=':
+//                 printf("\t%f\n", push(pop()));
+//                 break;
+//             case 'c':
+//                 clear();
+//                 break;
+//             case TOOBIG:
+//                 printf("%.20s ... is too long\n", s);
+//                 break;
+//             default:
+//                 printf("unknown command %c\n", type);
+//                 break;
+//         }
+// }
+
+
+
+// double atof(s) /* convert string to double */
+// char s[];
+// {
+//     double val, power;
+//     int i, sign;
+
+//     for (i = 0; s[i] == ' ' || s[i] == '\n' || s[i] == '\t'; i++)
+//         ; /* skip white space */
+//     sign = 1;
+//     if (s[i] == '+' || s[i] == '-') /* sign */
+//         sign = (s[i++]=='+') ? 1 : -1;
+//     for (val = 0; s[i] >= '0' && s[i] <= '9'; i++)
+//         val = 10 * val + s[i] - '0';
+//     if (s[i] == '.')
+//         i++;
+//     for (power = 1; s[i] >= '0' && s[i] <= '9'; i++) {
+//         val = 10 * val + s[i] - '0';
+//         power *= 10;
+//     }
+//     return(sign * val / power);
+// }
 
 
 
