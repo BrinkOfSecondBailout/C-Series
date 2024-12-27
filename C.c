@@ -1,5 +1,171 @@
 #include <stdio.h>
 
+static int day_tab[2][13] = {
+    {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
+    {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+};
+
+
+
+
+
+
+
+
+
+// char *strsave(char *s) {
+//     /* save string s somewhere */
+//     char *p, *alloc();
+
+//     if ((p = alloc(strlen(s) + 1)) != NULL)
+//         strcpy(p, s);
+//     return(p);
+// }
+
+
+
+
+// int strcmp(char s[], char t[]) {
+//     /* return <0 if s < t, 0 if s==t, >0 if s>t */
+//     int i;
+
+//     i = 0;
+
+//     while (s[i] == t[i])
+//         if (s[i++] == '\0')
+//             return(0);
+//     return(s[i] - t[i]);
+// }
+
+// int strcmp(char *s, char *t) {
+//     for ( ; *s == *t; s++, t++)
+//         if (*s == '\0')
+//             return(0);
+//     return(*s - *t);
+// }
+
+
+// int strcopy(char s[], char t[]) {
+//     /* copy t to s */
+//     int i;
+
+//     i = 0;
+//     while ((s[i] = t[i]) != '\0')
+//         i++;
+    
+// }
+
+// int strcpy(char *s, char *t) {
+//     /* copy to to s, pointer version */
+//     while ((*s = *t) != '\0') {
+//         s++;
+//         t++;
+//     }
+// }
+
+// int strcpy(char *s, char *t) {
+//     /* copy t to s, pointer 2 */
+//     while (*s++ = *t++)
+//         ;
+// }
+
+
+
+
+
+// int main() {
+//     int str_len();
+//     char str[6];
+//     str[0] = 'h';
+//     str[1] = 'e';
+//     str[2] = 'l';
+//     str[3] = 'l';
+//     str[4] = 'o';
+//     printf("%s\n", str);
+//     printf("%d\n", str_len(str));
+// }
+
+// int str_len(char *s)
+// {
+//     /* return length of string s */
+//     char *p = s;
+
+//     while (*p != '\0')
+//         p++;
+//     return(p - s);
+// }
+
+// #define NULL 0 /* pointer value for error report */
+// #define ALLOCSIZE 1000 /* size of available space */
+
+// static char allocbuf[ALLOCSIZE]; /* storage for alloc */
+// static char *allocp = allocbuf; /* next free position */
+
+// char *alloc(int n) /* return pointer to n characters */
+// {
+//     if (allocp + n <= allocbuf + ALLOCSIZE) {
+//         /* fits */
+//         allocp += n;
+//         return(allocp - n); /* old p */
+//     } else {
+//         /* not enough room */
+//         return (NULL);
+//     }
+// }
+
+// int free(char *p) {
+//     /* free storage pointed to by p */
+//     if (p >= allocbuf && p < allocbuf + ALLOCSIZE)
+//         allocp = p;
+// }
+
+
+
+
+
+
+// int strlen( char *s) {
+//     int n;
+
+//     for (n = 0; *s != '\0'; s++)
+//         n++;
+//     return(n);
+// }
+
+
+
+
+
+// #define SIZE 10
+
+// int main() {
+//     int n, v, array[SIZE];
+//     int get_int();
+
+//     for (n = 0; n < SIZE && get_int(&v) != EOF; n++)
+//         array[n] = v;
+// }
+
+// int get_int(int *pn) {
+//     int c, sign;
+
+//     while ((c = getch()) == ' ' || c == '\n' || c == '\t')
+//         ;
+//     sign = 1;
+//     if (c == '+' || c == '-') {
+//         sign = (c == '+') ? 1 : -1;
+//         c = getch();
+//     }
+//     for (*pn = 0; c >= '0' && c <= '9'; c = getch())
+//         *pn = 10 * *pn + c - '0';
+//     *pn *= sign;
+//     if (c != EOF)
+//         ungetch(c);
+//     return(c);
+// }
+
+
+
 
 
 
