@@ -1,12 +1,175 @@
 #include <stdio.h>
+#include <string.h>
 
-static int day_tab[2][13] = {
-    {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
-    {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
-};
+// int main(int argc, char *argv[]) {
+//     int i;
+
+//     for (i = 1; i < argc; i++)
+//         printf("%s%c", argv[i], (i < argc-1) ? ' ' : '\n');
+// }
+
+
+// int main(int argc, char *argv[]) {
+//     while (--argc > 0)
+//         printf("%s%c", *++argv, (argc > 1) ? ' ' : '\n');
+// }
+
+
+// int main(int argc, char *argv[]) {
+//     while (--argc > 0)
+//         printf((argc > 1) ? "%s " : "%s\n", *++argv);
+// }
 
 
 
+
+
+// char *month_name(int n) {
+//     /* return name of the n-th month */
+//     static char *name[] = {
+//         "illegal month",
+//         "January",
+//         "February",
+//         "March",
+//         "April",
+//         "May",
+//         "June",
+//         "July",
+//         "August",
+//         "September",
+//         "October",
+//         "November",
+//         "December"
+//     };
+
+//     return((n < 1 || n > 12) ? name[0] : name[n]);
+// }
+
+
+
+// #define LINES 100 /* max lines to be sorted */
+// #define MAXLEN 1000
+// #define ALLOCSIZE 1000 /* size of available space */
+
+// static char allocbuf[ALLOCSIZE]; /* storage for alloc */
+// static char *allocp = allocbuf;  /* next free position */
+
+// int main() {
+//     char *lineptr[LINES]; /* pointers to text lines */
+//     int nlines; /* number of input lines read */
+//     int sort(), readlines(), writelines(), get_line();
+
+//     if ((nlines = readlines(lineptr, LINES)) >= 0) {
+//         sort(lineptr, nlines);
+//         writelines(lineptr, nlines);
+//     }
+//     else
+//         printf("input too big to sort\n");
+// }
+
+
+// int get_line(char s[], int maxlen) {
+//     int c, i;
+
+//     for (i = 0; i < maxlen - 1 && (c = getchar()) != EOF && c != '\n'; ++i)
+//         s[i] = c;
+//     if (c == '\n') {
+//         s[i] = c;
+//         ++i;
+//     }
+
+//     s[i] = '\0';
+//     return i;
+// }
+
+// int readlines(char *lineptr[], int maxlines) {
+//     int len, nlines;
+//     char *p, *alloc(), line[MAXLEN];
+
+//     nlines = 0;
+//     while ((len = get_line(line, MAXLEN)) > 0)
+//         if (nlines >= maxlines)
+//             return(-1);
+//         else if ((p = alloc(len)) == NULL)
+//             return(-1);
+//         else {
+//             line[len - 1] = '\0'; /* zap newline */
+//             strcpy(p, line);
+//             lineptr[nlines++] = p;
+//         }
+//     return (nlines);
+// }
+
+// int writelines(char *lineptr[], int nlines) {
+//     /* write output lines */
+//     while (--nlines >= 0)
+//         printf("%s\n", *lineptr++);
+// }
+
+
+// int sort(char *v[], int n) {
+//     int gap, i, j;
+//     char *temp;
+
+//     for (gap = n/2; gap > 0; gap /= 2)
+//         for (i = gap; i < n; i++)
+//             for (j = i - gap; j >= 0; j -= gap) {
+//                 if (strcmp(v[j], v[j + gap]) <= 0)
+//                     break;
+//                 temp = v[j];
+//                 v[j] = v[j + gap];
+//                 v[j + gap] = temp;
+//             }
+// }
+
+// char *alloc(int n) /* return pointer to n characters */
+// {
+//     if (allocp + n <= allocbuf + ALLOCSIZE) {
+//         /* fits */
+//         allocp += n;
+//         return(allocp - n); /* old p */
+//     } else {
+//         /* not enough room */
+//         return (NULL);
+//     }
+// }
+
+
+
+
+// static int day_tab[2][13] = {
+//     {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
+//     {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+// };
+
+// int main() {
+//     int month, day, month_day(), day_of_year();
+
+//     month_day(2023, 64, &month, &day);
+
+//     printf("Month: %d, Day: %d\n", month, day);
+
+//     printf("Day of year: %d\n", day_of_year(2023, 4, 20));
+// }
+
+// int day_of_year(int year, int month, int day) {
+//     int i, leap;
+
+//     leap = year % 4 == 0 && year % 100 != 0 || year % 400 == 0;
+//     for (i = 1; i < month; i++)
+//         day += day_tab[leap][i];
+//     return(day);
+// }
+
+// int month_day(int year, int yearday, int *pmonth, int *pday) {
+//     int i, leap;
+
+//     leap = year % 4 == 0 && year % 100 != 0 || year % 400 == 0;
+//     for(i = 1; yearday > day_tab[leap][i]; i++)
+//         yearday -= day_tab[leap][i];
+//     *pmonth = i;
+//     *pday = yearday;
+// }
 
 
 
