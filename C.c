@@ -1,6 +1,63 @@
 #include <stdio.h>
 #include <string.h>
 
+#define LINES 100
+
+int main(int argc, char *argv[]) {
+    char *lineptr[LINES];
+    int nlines;
+    int strcmp(), numcpm();
+    int swap();
+    int numeric = 0;
+
+    if (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'n')
+        numeric = 1;
+    if ((nlines = readlines(lineptr, LINES)) >= 0) {
+        if (numeric)
+            sort(lineptr, nlines, numcpm, swap);
+        else
+            sort(lineptr, nlines, strcmp, swap);
+        writelines(lineptr, nlines);
+    } else {
+        printf("input too big to sort\n");
+    }
+}
+
+int sort(char *v[], int n, int (*comp)(), int (*exch)()) {
+    int gap, i, j;
+
+    for (gap = n/2; gap > 0; gap /= 2)
+        for (i = gap; i < n; i++)
+            for (j = i - gap; j >= 0; j -= gap) {
+                if ((*comp)(v[j], v[j + gap]) <= 0)
+                    break;
+                (*exch)(&v[j], &v[j + gap]);
+            }
+}
+
+int numcmp(char *s1, char *s2) {
+    double atof(), v1, v2;
+
+    v1 = atof(s1);
+    v2 = atof(s2);
+    if (v1 < v2)
+        return(-1);
+    else if (v1 > v2)
+        return(1);
+    else
+        return(0);
+}
+
+int swap(char *px[], char *py[]) {
+    char *temp;
+
+    temp = *px;
+    *px = *py;
+    *py = temp;
+}
+
+
+
 // int main(int argc, char *argv[]) {
 //     int i;
 
@@ -18,6 +75,84 @@
 // int main(int argc, char *argv[]) {
 //     while (--argc > 0)
 //         printf((argc > 1) ? "%s " : "%s\n", *++argv);
+// }
+
+// #define MAXLINE 1000
+
+// int main(int argc, char *argv[]) { /* find pattern from first argument */
+//     char line[MAXLINE];
+
+//     if (argc != 2)
+//         printf("Usage: find pattern\n");
+//     else
+//         while (getline(line, MAXLINE) > 0)
+//             if (index(line, argv[1] >= 0))
+//                 printf("%s", line);
+// }
+
+// int main(int argc, char *argv[]) {
+//     char line[MAXLINE], *s;
+//     long lineno = 0;
+//     int except = 0, number = 0;
+
+//     while (--argv > 0 && (*++argv)[0] == '-')
+//         for (s = argv[0] + 1; *s != '\0'; s++)
+//             switch(*s) {
+//                 case 'x':
+//                     except = 1;
+//                     break;
+//                 case 'n':
+//                     number = 1;
+//                     break;
+//                 default:
+//                     printf("find: illegal option%c\n", *s);
+//                     argc = 0;
+//                     break;
+//             }
+//     if (argc != 1)
+//         printf("Usage: find -x -n pattern\n");
+//     else
+//         while (getline(line, MAXLINE) > 0) {
+//             lineno++;
+//             if ((index(line, *argv) >= 0) != except) {
+//                 if (number)
+//                     printf("%ld: ", lineno);
+//                 printf("%s", line);
+//             }
+//         }
+// }
+
+
+
+
+// int getline(char s[], int maxlen)
+// {
+//     int c, i;
+
+//     for (i = 0; i < maxlen - 1 && (c = getchar()) != EOF && c != '\n'; ++i)
+//         s[i] = c;
+
+//     if (c == '\n')
+//     {
+//         s[i] = c; // Include newline character
+//         ++i;
+//     }
+
+//     s[i] = '\0'; // Null-terminate the string
+//     return i;    // Return the length of the line
+// }
+
+// int index(char s[], char t[]) { /* see if t is present in s */
+//     int i, j, k;
+
+//     for (i = 0; s[i] != '\0', i++) {
+//         for (j = i, k = 0; t[k] != '\0' && s[j] == t[k]; j++, k++)
+//             ;
+//         if (t[k] == '\0')
+//             return i;
+//     }
+
+//     return -1;
 // }
 
 
