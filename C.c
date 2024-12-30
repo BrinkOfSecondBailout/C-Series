@@ -1,60 +1,143 @@
 #include <stdio.h>
 #include <string.h>
 
-#define LINES 100
 
-int main(int argc, char *argv[]) {
-    char *lineptr[LINES];
-    int nlines;
-    int strcmp(), numcpm();
-    int swap();
-    int numeric = 0;
-
-    if (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'n')
-        numeric = 1;
-    if ((nlines = readlines(lineptr, LINES)) >= 0) {
-        if (numeric)
-            sort(lineptr, nlines, numcpm, swap);
-        else
-            sort(lineptr, nlines, strcmp, swap);
-        writelines(lineptr, nlines);
-    } else {
-        printf("input too big to sort\n");
-    }
+struct date {
+    int day;
+    int month;
+    int year;
+    int yearday;
+    char mon_name[4];
 }
 
-int sort(char *v[], int n, int (*comp)(), int (*exch)()) {
-    int gap, i, j;
+static int day_tab[2][13] = {
+    {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
+    {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+};
 
-    for (gap = n/2; gap > 0; gap /= 2)
-        for (i = gap; i < n; i++)
-            for (j = i - gap; j >= 0; j -= gap) {
-                if ((*comp)(v[j], v[j + gap]) <= 0)
-                    break;
-                (*exch)(&v[j], &v[j + gap]);
-            }
+int day_of_year(struct date *pd) {
+    int i, day, leap;
+
+    day = pd->day;
+    leap = pd->year % 4 == 0 && pd->year % 100 != 0 || pd->year % 400 == 0;
+    for (i = 1; i < pd->month; i++)
+        day += day_tab[leap][i];
+    return (day);
 }
 
-int numcmp(char *s1, char *s2) {
-    double atof(), v1, v2;
 
-    v1 = atof(s1);
-    v2 = atof(s2);
-    if (v1 < v2)
-        return(-1);
-    else if (v1 > v2)
-        return(1);
-    else
-        return(0);
-}
 
-int swap(char *px[], char *py[]) {
-    char *temp;
 
-    temp = *px;
-    *px = *py;
-    *py = temp;
-}
+
+
+
+
+
+
+
+
+
+
+// #define MAXLINE 1000
+
+// struct lnode {
+//     char *text;
+//     struct lnode *next;
+// };
+
+// struct list {
+//     struct lnode *head;
+//     struct lnode *tail;
+// };
+
+// void list_add(struct list *lst, char *line) {
+//     char *save = (char *) malloc(strlen(line) + 1);
+//     strcpy(save, line);
+//     struct lnode *new = (struct lnode *) malloc(sizeof(struct lnode));
+
+//     if (lst->tail != NULL) lst->tail->next = new;
+//     new->text = save;
+//     new->next = NULL;
+//     lst->tail = new;
+
+//     if (lst->head == NULL) lst->head = new;
+// }
+
+
+// int main() {
+//     char line[MAXLINE];
+//     struct list mylist;
+//     struct lnode *current;
+
+//     mylist.head = NULL;
+//     mylist.tail = NULL;
+
+//     while(fgets(line, MAXLINE, stdin) != NULL) {
+//         list_add(&mylist, line);
+//     }
+
+//     for (current = mylist.head; current != NULL; current = current->next) {
+//         printf("%s", current->text);
+//     }
+// }
+
+
+
+
+// #define LINES 100
+
+// int main(int argc, char *argv[]) {
+//     char *lineptr[LINES];
+//     int nlines;
+//     int strcmp(), numcpm();
+//     int swap();
+//     int numeric = 0;
+
+//     if (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'n')
+//         numeric = 1;
+//     if ((nlines = readlines(lineptr, LINES)) >= 0) {
+//         if (numeric)
+//             sort(lineptr, nlines, numcpm, swap);
+//         else
+//             sort(lineptr, nlines, strcmp, swap);
+//         writelines(lineptr, nlines);
+//     } else {
+//         printf("input too big to sort\n");
+//     }
+// }
+
+// int sort(char *v[], int n, int (*comp)(), int (*exch)()) {
+//     int gap, i, j;
+
+//     for (gap = n/2; gap > 0; gap /= 2)
+//         for (i = gap; i < n; i++)
+//             for (j = i - gap; j >= 0; j -= gap) {
+//                 if ((*comp)(v[j], v[j + gap]) <= 0)
+//                     break;
+//                 (*exch)(&v[j], &v[j + gap]);
+//             }
+// }
+
+// int numcmp(char *s1, char *s2) {
+//     double atof(), v1, v2;
+
+//     v1 = atof(s1);
+//     v2 = atof(s2);
+//     if (v1 < v2)
+//         return(-1);
+//     else if (v1 > v2)
+//         return(1);
+//     else
+//         return(0);
+// }
+
+// int swap(char *px[], char *py[]) {
+//     char *temp;
+
+//     temp = *px;
+//     *px = *py;
+//     *py = temp;
+// }
 
 
 
