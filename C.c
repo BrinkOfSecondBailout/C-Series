@@ -1,29 +1,206 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MAXWORD 20
+#define LETTER 'a'
+#define DIGIT '0'
+#define NKEYS (sizeof(keytab) / sizeof(struct key))
+#define BUFSIZE 100
+char buf[BUFSIZE]; /* buffer for ungetch */
+int bufp = 0; /* next free position in buf */
 
-struct date {
-    int day;
-    int month;
-    int year;
-    int yearday;
-    char mon_name[4];
+
+struct key {
+    char *keyword;
+    int keycount;
+} keytab[NKEYS];
+
+int type(int c) {
+    if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z')
+        return(LETTER);
+    else if (c >= '0' && c <= '9')
+        return(DIGIT);
+    else
+        return(c);
 }
 
-static int day_tab[2][13] = {
-    {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
-    {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
-};
-
-int day_of_year(struct date *pd) {
-    int i, day, leap;
-
-    day = pd->day;
-    leap = pd->year % 4 == 0 && pd->year % 100 != 0 || pd->year % 400 == 0;
-    for (i = 1; i < pd->month; i++)
-        day += day_tab[leap][i];
-    return (day);
+int getch() /* get a (possibly pushed back) character */
+{
+    return ((bufp > 0) ? buf[--bufp] : getchar());
 }
+
+int ungetch(int c) /* push character back on input */
+{
+    if (bufp > BUFSIZE)
+        printf("ungetch: too many characters\n");
+    else
+        buf[bufp++] = c;
+}
+
+int getword(char *w, int lim) {
+    int c, t;
+    if (type(c = *w++ = getch()) != LETTER) {
+        *w = '\0';
+        return(c);
+    }
+
+    while (--lim > 0) {
+        t = type(c = *w++ = getch());
+        if (t != LETTER && t != DIGIT) {{
+            ungetch(c);
+            break;
+        }}
+    }
+    *(w-1) = '\0';
+    return (LETTER);
+}
+
+
+int main() {
+    int t;
+    char word[MAXWORD];
+    struct key *binary(), *p;
+
+    while ((t = getword(word, MAXWORD)) != EOF)
+        if (t == LETTER)
+            if ((p=binary(word, keytab, NKEYS)) != NULL)
+                p->keycount++;
+    for (p = keytab; p < keytab + NKEYS; p++)
+        if (p->keycount > 0)
+            printf("%4d %s\n", p->keycount, p->keyword);
+}
+
+struct key *binary(char *word, struct key tab[], int n) {
+    int cond;
+
+    struct key *low = &tab[0];
+    struct key *high = &tab[n - 1];
+    struct key *mid;
+
+    while (low <= high) {
+        mid = low + (high - low) / 2;
+        if ((cond = strcmp(word, mid->keyword)) < 0)
+            high = mid - 1;
+        else if (cond > 0)
+            low = mid + 1;
+        else
+            return (mid);
+    }
+    return(NULL);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// struct key {
+//     char *keyword;
+//     int keycount;
+// } keytab[NKEYS];
+
+// int main() {
+//     int n, t;
+//     char word[MAXWORD];
+
+//     while ((t = getword(word, MAXWORD)) != EOF)
+//         if (t == LETTER)
+//             if ((n = binary(word, keytab, NKEYS)) >= 0)
+//                 keytab[n].keycount++;
+    
+//     for (n = 0; n < NKEYS; n++)
+//         if (keytab[n].keycount > 0)
+//             printf("%4d %s\n", keytab[n].keycount, keytab[n].keyword);
+// }
+
+// int binary(char *word, struct key tab[], int n) {
+//     int low, high, mid, cond;
+
+//     low = 0;
+//     high = n - 1;
+//     while (low <= high) {
+//         mid = (low + high) / 2;
+//         if ((cond = strcmp(word, tab[mid].keyword)) < 0)
+//             high = mid - 1;
+//         else if (cond > 0)
+//             low = mid + 1;
+//         else
+//             return (mid);
+//     }
+//     return(-1);
+// }
+
+// int getword(char *w, int lim) {
+//     int c, t;
+//     if (type(c = *w++ = getch()) != LETTER) {
+//         *w = '\0';
+//         return(c);
+//     }
+
+//     while (--lim > 0) {
+//         t = type(c = *w++ = getch());
+//         if (t != LETTER && t != DIGIT) {{
+//             ungetch(c);
+//             break;
+//         }}
+//     }
+//     *(w-1) = '\0';
+//     return (LETTER);
+// }
+
+// int type(int c) {
+//     if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z')
+//         return(LETTER);
+//     else if (c >= '0' && c <= '9')
+//         return(DIGIT);
+//     else
+//         return(c);
+// }
+
+
+// struct date {
+//     int day;
+//     int month;
+//     int year;
+//     int yearday;
+//     char mon_name[4];
+// }
+
+// static int day_tab[2][13] = {
+//     {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
+//     {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+// };
+
+// int day_of_year(struct date *pd) {
+//     int i, day, leap;
+
+//     day = pd->day;
+//     leap = pd->year % 4 == 0 && pd->year % 100 != 0 || pd->year % 400 == 0;
+//     for (i = 1; i < pd->month; i++)
+//         day += day_tab[leap][i];
+//     return (day);
+// }
+
+// month_day(struct date *pd) /* set month and day from day of year */ {
+//     int i, leap;
+
+//     leap = pd->year % 4 == 0 && pd->year % 100 != 0 || pd->year % 400 == 0;
+//     pd->day = pd->yearday;
+//     for (i = 1; pd->day > day_tab[leap][i]; i++)
+//         pd->day -= day_tab[leap][i];
+//     pd->month = i;
+// }
+
+
+
 
 
 
