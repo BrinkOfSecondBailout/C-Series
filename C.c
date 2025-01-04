@@ -1,93 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-
-#define MAXWORD 20
-#define LETTER 'a'
-#define DIGIT '0'
-#define NKEYS (sizeof(keytab) / sizeof(struct key))
-#define BUFSIZE 100
-char buf[BUFSIZE]; /* buffer for ungetch */
-int bufp = 0; /* next free position in buf */
-
-
-struct key {
-    char *keyword;
-    int keycount;
-} keytab[NKEYS];
-
-int type(int c) {
-    if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z')
-        return(LETTER);
-    else if (c >= '0' && c <= '9')
-        return(DIGIT);
-    else
-        return(c);
-}
-
-int getch() /* get a (possibly pushed back) character */
-{
-    return ((bufp > 0) ? buf[--bufp] : getchar());
-}
-
-int ungetch(int c) /* push character back on input */
-{
-    if (bufp > BUFSIZE)
-        printf("ungetch: too many characters\n");
-    else
-        buf[bufp++] = c;
-}
-
-int getword(char *w, int lim) {
-    int c, t;
-    if (type(c = *w++ = getch()) != LETTER) {
-        *w = '\0';
-        return(c);
-    }
-
-    while (--lim > 0) {
-        t = type(c = *w++ = getch());
-        if (t != LETTER && t != DIGIT) {{
-            ungetch(c);
-            break;
-        }}
-    }
-    *(w-1) = '\0';
-    return (LETTER);
-}
-
-
-int main() {
-    int t;
-    char word[MAXWORD];
-    struct key *binary(), *p;
-
-    while ((t = getword(word, MAXWORD)) != EOF)
-        if (t == LETTER)
-            if ((p=binary(word, keytab, NKEYS)) != NULL)
-                p->keycount++;
-    for (p = keytab; p < keytab + NKEYS; p++)
-        if (p->keycount > 0)
-            printf("%4d %s\n", p->keycount, p->keyword);
-}
-
-struct key *binary(char *word, struct key tab[], int n) {
-    int cond;
-
-    struct key *low = &tab[0];
-    struct key *high = &tab[n - 1];
-    struct key *mid;
-
-    while (low <= high) {
-        mid = low + (high - low) / 2;
-        if ((cond = strcmp(word, mid->keyword)) < 0)
-            high = mid - 1;
-        else if (cond > 0)
-            low = mid + 1;
-        else
-            return (mid);
-    }
-    return(NULL);
-}
+#include <math.h>
 
 
 
@@ -98,6 +11,288 @@ struct key *binary(char *word, struct key tab[], int n) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+// struct Example {
+//     unsigned a : 5;
+//     unsigned b : 10;
+//     unsigned c : 17;
+//     unsigned d : 8;
+// };
+
+// int main() {
+//     printf("Size of struct Example: %zu bytes\n", sizeof(struct Example));
+// }
+
+
+
+
+// #define HASHSIZE 100
+
+// struct nlist { /* basic table entry */
+//     char *name;
+//     char *def;
+//     struct nlist *next; /* next entry in chain */
+// };
+
+// static struct nlist *hashtab[HASHSIZE]; /* pointer table */
+
+// int hash(char *s) { /* form hash value for string s */
+//     int hashval;
+
+//     for (hashval = 0; *s != '\0'; )
+//         hashval += *s++;
+//     return(hashval % HASHSIZE);
+// }
+
+// struct nlist *lookup(char *s) { /* look for s in hashtab */
+//     struct nlist *np;
+
+//     for (np = hashtab[hash(s)]; np != NULL; np = np->next)
+//         if (strcmp(s, np->name) == 0)
+//             return(np); /* found */
+//     return(NULL); /*not found */
+// }
+
+// struct nlist *install(char *name, char *def) { /* install in hashtab */
+//     struct nlist *np, *lookup();
+//     char *strsave(), *alloc();
+//     int hashval;
+
+//     if ((np = lookup (name)) == NULL) { /* Not found */
+//         np = (struct nlist *) alloc(sizeof(*np));
+//         if (np == NULL)
+//             return(NULL);
+//         if ((np->name = strsave(name)) == NULL)
+//             return (NULL);
+//         hashval = hash(np->name);
+//         np->next = hashtab[hashval];
+//     } else /* already there */
+//         free(np->def); /* free previous definition */
+//     if ((np->def = strsave(def)) == NULL)
+//         return(NULL);
+//     return(np);
+// }
+
+
+
+
+
+
+
+
+// #define MAXWORD 20
+// #define LETTER 'a'
+
+// struct tnode {
+//     char *word;
+//     int count;
+//     struct tnode *left;
+//     struct tnode *right;
+// };
+
+// int main() {
+//     struct tnode *root, *tree();
+//     char word[MAXWORD];
+//     int t;
+
+//     root = NULL;
+//     while ((t = get_word(word, MAXWORD)) != EOF)
+//         if (t == LETTER)
+//             root = tree(root, word);
+//     treeprint(root);
+// }
+
+// struct tnode *tree(struct tnode *p, char *w) {
+//     struct tnode *talloc();
+//     char *strsave();
+//     int cond;
+
+//     if (p == NULL) { /* tree is brand new and this is the first word */
+//         p = talloc();
+//         p->word = strsave(w);
+//         p->count = 1;
+//         p->left = p->right = NULL;
+//     } else if ((cond = strcmp(w, p->word)) == 0) /* a word is found, increment the count */
+//         p->count++;
+//     else if (cond < 0) /* word is less than the root, go to the left */
+//         p->left = tree(p->left, w);
+//     else /* word is more than the root, go to the right */
+//         p->right = tree(p->right, w);
+//     return (p);
+// }
+
+// int treeprint(struct tnode *p) {
+//     if (p != NULL) {
+//         treeprint(p->left);
+//         printf("%4d %s\n", p->count, p->word);
+//         treeprint(p->right);
+//     }
+// }
+
+
+
+
+
+
+
+
+// #define MAXLINE 1000
+
+// struct lnode {
+//     char *text;
+//     struct lnode *prev;
+//     struct lnode *next;
+// };
+
+// int main() {
+//     struct lnode *head = NULL;
+//     struct lnode *tail = NULL;
+//     struct lnode *current;
+//     char line[MAXLINE];
+
+//     while (fgets(line, MAXLINE, stdin) != NULL) {
+//         char *save = (char *) malloc(strlen(line) + 1);
+//         strcpy(save, line);
+
+//         struct lnode *new = (struct lnode *) malloc(sizeof(struct lnode));
+//         new->text = save;
+//         new->next = NULL;
+//         new->prev = tail;
+
+//         if (head == NULL) head = new;
+//         if (tail != NULL) tail->next = new;
+//         tail = new;
+//     }
+
+//     for (current = tail; current != NULL; current=current->prev) {
+//         printf("%s", current->text);
+//     }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// #define MAXWORD 20
+// #define LETTER 'a'
+// #define DIGIT '0'
+// #define NKEYS (sizeof(keytab) / sizeof(struct key))
+// #define BUFSIZE 100
+// char buf[BUFSIZE]; /* buffer for ungetch */
+// int bufp = 0; /* next free position in buf */
+
+
+// struct key {
+//     char *keyword;
+//     int keycount;
+// } keytab[NKEYS];
+
+// int type(int c) {
+//     if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z')
+//         return(LETTER);
+//     else if (c >= '0' && c <= '9')
+//         return(DIGIT);
+//     else
+//         return(c);
+// }
+
+// int getch() /* get a (possibly pushed back) character */
+// {
+//     return ((bufp > 0) ? buf[--bufp] : getchar());
+// }
+
+// int ungetch(int c) /* push character back on input */
+// {
+//     if (bufp > BUFSIZE)
+//         printf("ungetch: too many characters\n");
+//     else
+//         buf[bufp++] = c;
+// }
+
+// int getword(char *w, int lim) {
+//     int c, t;
+//     if (type(c = *w++ = getch()) != LETTER) {
+//         *w = '\0';
+//         return(c);
+//     }
+
+//     while (--lim > 0) {
+//         t = type(c = *w++ = getch());
+//         if (t != LETTER && t != DIGIT) {{
+//             ungetch(c);
+//             break;
+//         }}
+//     }
+//     *(w-1) = '\0';
+//     return (LETTER);
+// }
+
+
+// int main() {
+//     int t;
+//     char word[MAXWORD];
+//     struct key *binary(), *p;
+
+//     while ((t = getword(word, MAXWORD)) != EOF)
+//         if (t == LETTER)
+//             if ((p=binary(word, keytab, NKEYS)) != NULL)
+//                 p->keycount++;
+//     for (p = keytab; p < keytab + NKEYS; p++)
+//         if (p->keycount > 0)
+//             printf("%4d %s\n", p->keycount, p->keyword);
+// }
+
+// struct key *binary(char *word, struct key tab[], int n) {
+//     int cond;
+
+//     struct key *low = &tab[0];
+//     struct key *high = &tab[n - 1];
+//     struct key *mid;
+
+//     while (low <= high) {
+//         mid = low + (high - low) / 2;
+//         if ((cond = strcmp(word, mid->keyword)) < 0)
+//             high = mid - 1;
+//         else if (cond > 0)
+//             low = mid + 1;
+//         else
+//             return (mid);
+//     }
+//     return(NULL);
+// }
 
 
 
