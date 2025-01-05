@@ -1,13 +1,189 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include <math.h>
+#include <string.h>
+
+
+struct pystr {
+    int length;
+    int alloc;
+    char *data;
+};
+
+struct pystr * pystr_new() {
+    struct pystr * p = malloc(sizeof(*p));
+
+    p->length = 0;
+    p->alloc = 10;
+    p->data = malloc(10);
+    p->data[0] = '\0';
+
+    return p;
+}
+
+void pystr_del(const struct pystr* x) {
+    if (x) {
+        free((void *)x->data);
+        free((void *)x);
+    }
+}
+
+void pystr_dump(const struct pystr *x)
+{
+    if (x) {
+        printf("Pystr length=%d alloc=%d data=%s\n", x->length, x->alloc, x->data);
+    }
+}
+
+int pystr_len(const struct pystr *x) {
+    if (x) {
+        return x->length;
+    }
+}
+
+char *pystr_str(const struct pystr *x)
+{
+    if (x)
+    {
+        return x->data;
+    }
+}
+
+void pystr_append(struct pystr *x, char c)
+{
+    if (x) {
+        if ((x->length + 1) < x->alloc) {
+            x->data[x->length] = c;
+            x->length += 1;
+            x->data[x->length] = '\0';
+        } else {
+            printf("Not enough memory");
+        }
+    }
+}
+
+void pystr_appends( struct pystr *x, char* c) {
+    if (x) {
+        for(; c != '\0'; c++) {
+            pystr_append(x, c);
+        }
+    }
+}
+
+void pystr_assign(struct pystr* x, char *str) {
+    if (x) {
+        x = pystr_new();
+        pystr_appends(x, *str);
+    }
+}
+
+
+int main(void)
+{
+    struct pystr * x = pystr_new();
+    pystr_dump(x);
+
+    pystr_append(x, 'H');
+    pystr_dump(x);
+
+    pystr_appends(x, "ello world");
+    pystr_dump(x);
+
+    pystr_assign(x, "A completely new string");
+    printf("String = %s\n", pystr_str(x));
+    printf("Length = %d\n", pystr_len(x));
+    pystr_del(x);
+}
+
+// struct Point {
+//     double x;
+//     double y;
+
+//     void (*del) (const struct Point* self);
+//     void (*dump) (const struct Point* self);
+//     double (*origin) (const struct Point* self);
+// };
+
+// void point_dump(const struct Point* self) {
+//     printf("Object point@%p x=%f y=%f\n", self, self->x, self->y);
+// }
+
+// void point_del(const struct Point* self) {
+//     free((void*)self);
+// }
+
+// double point_origin(const struct Point* self) {
+//     return sqrt(self->x*self->x + self->y * self->y);
+// }
+
+// struct Point *point_new(double x, double y) {
+//     struct Point *p = malloc(sizeof(*p));
+//     p->x = x;
+//     p->y = y;
+//     p->dump = &point_dump;
+//     p->origin = &point_origin;
+//     p->del = &point_del;
+//     return p;
+// }
+
+// int main(void) {
+//     struct Point *pt = point_new(4.0, 5.0);
+//     pt->dump(pt);
+//     printf("Origin %f\n", pt->origin(pt));
+//     pt->del(pt);
+// }
 
 
 
 
 
 
+// struct Student {
+//     char *name;
+//     int age;
 
+//     void (*del) (const struct Student* self);
+//     void (*dump) (const struct Student* self);
+// };
+
+// void student_del(const struct Student* self) {
+//     if (self) {
+//         free((void *)self->name);
+//         free((void *)self);
+//     }
+// }
+
+// void student_dump(const struct Student* self) {
+//     if (self) {
+//         printf("Object @%p name=%s age=%d\n", self, self->name, self->age);
+//     }
+// }
+
+// struct Student * student_new(char *name, int age) {
+//     struct Student *p = malloc(sizeof(*p));
+//     if (!p) {
+//         fprintf(stderr, "Memory allocation failed for Student\n");
+//         exit(EXIT_FAILURE);
+//     }
+//     p->name = malloc(strlen(name) + 1);
+//     if (!p->name) {
+//         fprintf(stderr, "Memory allocation failed for name\n");
+//         free(p);
+//         exit(EXIT_FAILURE);
+//     }
+//     strcpy(p->name, name);
+//     p->age = age;
+//     p->del = &student_del;
+//     p->dump = &student_dump;
+//     return p;
+// }
+
+// int main() {
+//     char *name = "Danny";
+//     struct Student * danny = student_new(name, 35);
+//     danny->dump(danny);
+//     danny->del(danny);
+// }
 
 
 
