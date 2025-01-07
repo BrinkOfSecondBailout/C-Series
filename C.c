@@ -3,97 +3,219 @@
 #include <math.h>
 #include <string.h>
 
+// struct pystr
+// {
+//     int length;
+//     int alloc;
+//     char *data;
+// };
 
-struct pystr {
-    int length;
-    int alloc;
-    char *data;
+// struct pystr *pystr_new()
+// {
+//     struct pystr *p = malloc(sizeof(*p));
+
+//     p->length = 0;
+//     p->alloc = 10;
+//     p->data = malloc(10);
+//     p->data[0] = '\0';
+
+//     return p;
+// }
+
+// void pystr_del(const struct pystr *x)
+// {
+//     if (x)
+//     {
+//         free((void *)x->data);
+//         free((void *)x);
+//     }
+// }
+
+// void pystr_dump(const struct pystr *x)
+// {
+//     if (x)
+//     {
+//         printf("Pystr length=%d alloc=%d data=%s\n", x->length, x->alloc, x->data);
+//     }
+// }
+
+// int pystr_len(const struct pystr *x)
+// {
+//     return (x ? x->length : 0);
+// }
+
+// char *pystr_str(const struct pystr *x)
+// {
+//     return x->data;
+// }
+
+// void pystr_append(struct pystr *x, char c)
+// {
+//     if (x->length + 1 >= x->alloc)
+//     {
+//         x->alloc *= 2;
+//         x->data = realloc(x->data, x->alloc);
+//         if (!x->data)
+//         {
+//             fprintf(stderr, "Memory reallocation failed\n");
+//             exit(EXIT_FAILURE);
+//         }
+//     }
+//     x->data[x->length] = c;
+//     x->length++;
+//     x->data[x->length] = '\0';
+// }
+
+// void pystr_appends(struct pystr *x, char *c)
+// {
+//     for (; *c != '\0'; c++)
+//     {
+//         pystr_append(x, *c);
+//     }
+// }
+
+// void pystr_assign(struct pystr *x, char *c)
+// {
+//     if (x)
+//     {
+//         x->length = 0;
+//         pystr_appends(x, c);
+//     }
+// }
+
+
+
+struct lnode {
+    char *text;
+    struct lnode *next;
 };
 
-struct pystr * pystr_new() {
-    struct pystr * p = malloc(sizeof(*p));
+
+struct pylist {
+    struct lnode *head;
+    struct lnode *tail;
+    int length;
+};
+
+struct pylist * pylist_new() {
+    struct pylist *p = malloc(sizeof(*p));
 
     p->length = 0;
-    p->alloc = 10;
-    p->data = malloc(10);
-    p->data[0] = '\0';
+    p->head = NULL;
+    p->tail = NULL;
 
     return p;
 }
 
-void pystr_del(const struct pystr* x) {
-    if (x) {
-        free((void *)x->data);
-        free((void *)x);
-    }
-}
+void pylist_append(struct pylist * self, char *c) {
+    struct lnode *new_node = malloc(sizeof(*new_node));
 
-void pystr_dump(const struct pystr *x)
-{
-    if (x) {
-        printf("Pystr length=%d alloc=%d data=%s\n", x->length, x->alloc, x->data);
-    }
-}
-
-int pystr_len(const struct pystr *x) {
-    if (x) {
-        return x->length;
-    }
-}
-
-char *pystr_str(const struct pystr *x)
-{
-    if (x)
+    if (!new_node)
     {
-        return x->data;
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
     }
+
+    new_node->text = malloc(strlen(c) + 1);
+    if (!new_node->text)
+    {
+        fprintf(stderr, "Memory allocation failed\n");
+        free(new_node);
+        exit(EXIT_FAILURE);
+    }
+
+    strcpy(new_node->text, c);
+
+    new_node->next = NULL;
+
+    if (self->head == NULL) {
+        self->head = new_node;
+        self->tail = new_node;
+    } else {
+        self->tail->next = new_node;
+        self->tail = new_node;
+    }
+    self->length++;
+
 }
 
-void pystr_append(struct pystr *x, char c)
-{
-    if (x) {
-        if ((x->length + 1) < x->alloc) {
-            x->data[x->length] = c;
-            x->length += 1;
-            x->data[x->length] = '\0';
-        } else {
-            printf("Not enough memory");
-        }
+void pylist_print(struct pylist * self) {
+    if (self->length == 0) {
+        printf("[]\n");
+        return;
     }
+
+    struct lnode *cur;
+    cur = self->head;
+    printf("[");
+    while(cur) {
+        printf("'%s'", cur->text);
+        cur = cur->next;
+        if (cur)
+            printf(", ");
+    }
+    printf("]\n");
 }
 
-void pystr_appends( struct pystr *x, char* c) {
-    if (x) {
-        for(; c != '\0'; c++) {
-            pystr_append(x, c);
-        }
-    }
+int pylist_len(const struct pylist * self) {
+    return self->length;
 }
 
-void pystr_assign(struct pystr* x, char *str) {
-    if (x) {
-        x = pystr_new();
-        pystr_appends(x, *str);
-    }
+int pylist_index(struct pylist *self, char *c) {
+    
 }
+
+void pylist_del(struct pylist *self) {
+    struct lnode *cur, *next;
+    cur = self->head;
+    while (cur) {
+        free(cur->text);
+        next = cur->next;
+        free(cur);
+        cur = next;
+    }
+    free((void *)self);
+}
+
 
 
 int main(void)
 {
-    struct pystr * x = pystr_new();
-    pystr_dump(x);
-
-    pystr_append(x, 'H');
-    pystr_dump(x);
-
-    pystr_appends(x, "ello world");
-    pystr_dump(x);
-
-    pystr_assign(x, "A completely new string");
-    printf("String = %s\n", pystr_str(x));
-    printf("Length = %d\n", pystr_len(x));
-    pystr_del(x);
+    struct pylist *lst = pylist_new();
+    pylist_append(lst, "Hello world");
+    pylist_print(lst);
+    pylist_append(lst, "Catch phrase");
+    pylist_print(lst);
+    pylist_append(lst, "Brian");
+    pylist_print(lst);
+    printf("Length = %d\n", pylist_len(lst));
+    // printf("Brian? %d\n", pylist_index(lst, "Brian"));
+    // printf("Bob? %d\n", pylist_index(lst, "Bob"));
+    pylist_del(lst);
 }
+
+// int main(void)
+// {
+//     struct pystr * x = pystr_new();
+//     pystr_dump(x);
+
+//     pystr_append(x, 'H');
+//     pystr_dump(x);
+
+//     pystr_appends(x, "ello world");
+//     pystr_dump(x);
+
+//     pystr_assign(x, "A new string");
+//     printf("String = %s\n", pystr_str(x));
+//     printf("Length = %d\n", pystr_len(x));
+//     pystr_del(x);
+// }
+
+
+
+
+
+
 
 // struct Point {
 //     double x;
