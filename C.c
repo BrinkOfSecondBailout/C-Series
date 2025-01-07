@@ -162,7 +162,13 @@ int pylist_len(const struct pylist * self) {
 }
 
 int pylist_index(struct pylist *self, char *c) {
-    
+    struct lnode *cur;
+    int i;
+    cur = self->head;
+    for(i = 0; cur != NULL; cur = cur->next, i++) {
+        if (strcmp(cur->text, c) == 0) return(i);
+    }
+    return(-1);
 }
 
 void pylist_del(struct pylist *self) {
@@ -189,8 +195,8 @@ int main(void)
     pylist_append(lst, "Brian");
     pylist_print(lst);
     printf("Length = %d\n", pylist_len(lst));
-    // printf("Brian? %d\n", pylist_index(lst, "Brian"));
-    // printf("Bob? %d\n", pylist_index(lst, "Bob"));
+    printf("Brian? %d\n", pylist_index(lst, "Brian"));
+    printf("Bob? %d\n", pylist_index(lst, "Bob"));
     pylist_del(lst);
 }
 
