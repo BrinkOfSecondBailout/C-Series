@@ -12,6 +12,23 @@ struct MapEntry {
     struct MapEntry *__next;
 };
 
+struct MapIter {
+    struct MapEntry *__current;
+
+    struct MapEntry* (*next) (struct MapIter* self);
+    void (*del) (struct MapIter* self);
+};
+
+struct MapEntry * __MapIter_next(struct MapIter* self) {
+    
+}
+
+void __MapIter_del(struct MapIter* self) {
+
+}
+
+
+
 struct Map {
     struct MapEntry *__head;
     struct MapEntry *__tail;
@@ -29,7 +46,7 @@ void __Map_dump(struct Map* self) {
     struct MapEntry *cur;
     printf("Object Map count=%d\n", self->__count);
     for(cur = self->__head; cur != NULL; cur = cur->__next) {
-        printf(" %s=%d\n", cur->key, cur->value);
+        printf("%s=%d\n", cur->key, cur->value);
     }
 }
 
@@ -43,8 +60,8 @@ void __Map_del(struct Map* self) {
         cur = next;
     }
     free((void *)self);
+    printf("Successfully freed.\n");
 }
-
 
 struct MapEntry * __Map_find(struct Map* self, char *key) {
     struct MapEntry *cur;
@@ -98,6 +115,7 @@ void __Map_put(struct Map* self, char *key, int value) {
         new_entry->__prev = self->__tail;
         self->__tail = new_entry;
     }
+    self->__count++;
 }
 
 int __Map_size(struct Map *self) {
@@ -120,13 +138,25 @@ struct Map * Map_new() {
     return p;
 }
 
+struct MapIter * MapIter_new(struct Map *self) {
+    struct MapIter *p = malloc(sizeof(*p));
+
+    p->__current = self->__head;
+    p->next = &__MapIter_next;
+    p->del = &__MapIter_del;
+
+    return p;
+}
 
 int main() {
     struct Map * map = Map_new();
     map->put(map, "Danny", 5);
-    map->get(map, "Danny", 404);
-    map->get(map, "Zach", 404);
+    map->put(map, "Lindsey", 15);
+    printf("Danny=%d\n", map->get(map, "Danny", 404));
+    printf("Zach=%d\n", map->get(map, "Zach", 404));
     map->dump(map);
+    printf("Size=%d\n", map->size(map));
+    map->del(map);
 }
 
 
