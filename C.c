@@ -3,164 +3,372 @@
 #include <math.h>
 #include <string.h>
 
-
-
-struct MapEntry {
-    char *key; /* public */
-    int value; /* public */
-    struct MapEntry *__prev;
-    struct MapEntry *__next;
+struct HashMapEntry
+{
+    char *key;
+    int value;
+    struct HashMapEntry *__prev;
+    struct HashMapEntry *__next;
 };
 
-struct MapIter {
-    struct MapEntry *__current;
-
-    struct MapEntry* (*next) (struct MapIter* self);
-    void (*del) (struct MapIter* self);
-};
-
-struct MapEntry * __MapIter_next(struct MapIter* self) {
-    
-}
-
-void __MapIter_del(struct MapIter* self) {
-
-}
-
-
-
-struct Map {
-    struct MapEntry *__head;
-    struct MapEntry *__tail;
+struct HashMap
+{
+    int __buckets;
+    struct HashMapEntry *__heads[8];
+    struct HashMapEntry *__tails[8];
     int __count;
 
-    /* Public methods*/
-    void (*put) (struct Map* self, char *key, int value);
-    int (*get) (struct Map* self, char *key, int def);
-    int (*size) (struct Map* self);
-    void (*dump) (struct Map* self);
-    void (*del) (struct Map* self);
+    void (*put)(struct HashMap *self, char *key, int value);
+    int (*get)(struct HashMap *self, char *key, int def);
+    int (*size)(struct HashMap *self);
+    void (*dump)(struct HashMap *self);
+    struct HashMapIter * (*iter)(struct HashMap *self);
+    void (*del)(struct HashMap *self);
 };
 
-void __Map_dump(struct Map* self) {
-    struct MapEntry *cur;
-    printf("Object Map count=%d\n", self->__count);
-    for(cur = self->__head; cur != NULL; cur = cur->__next) {
-        printf("%s=%d\n", cur->key, cur->value);
-    }
-}
+struct HashMapIter {
+    int __bucket;
+    struct HashMap *__map;
+    struct HashMapEntry *__current;
 
-void __Map_del(struct Map* self) {
-    struct MapEntry *cur, *next;
-    cur = self->__head;
-    while(cur) {
-        free(cur->key);
-        next = cur->__next;
-        free(cur);
-        cur = next;
-    }
+    struct HashMapEntry * (*next)(struct HashMapIter *self);
+    void (*del)(struct HashMapIter *self);
+};
+
+void __HashMapIter_del(struct HashMapIter *self) {
     free((void *)self);
-    printf("Successfully freed.\n");
 }
 
-struct MapEntry * __Map_find(struct Map* self, char *key) {
-    struct MapEntry *cur;
-    cur = self->__head;
-    while(cur) {
-        if (strcmp(cur->key, key) == 0) {
-            return cur;
-        }
-        cur = cur->__next;
+struct HashMapEntry *__HashMapIter_next(struct HashMapIter *self)
+{
+    struct HashMapEntry *retval;
+
+    while (self->__current == NULL)
+    {
+        self->__bucket++;
+        if (self->__bucket >= self->__map->__buckets)
+            return NULL;
+        self->__current = self->__map->__heads[self->__bucket];
+    }
+    retval = self->__current;
+    if (self->__current != NULL)
+        self->__current = self->__current->__next;
+    return retval;
+}
+
+struct HashMapIter *__HashMapIter_new(struct HashMap *map) {
+    struct HashMapIter *iter = malloc(sizeof(*iter));
+
+    iter->__map = map;
+    iter->__bucket = 0;
+    iter->__current = map->__heads[iter->__bucket];
+
+    iter->next = &__HashMapIter_next;
+    iter->del = &__HashMapIter_del;
+    return iter;
+}
+
+void __HashMap_del(struct HashMap *self) {
+    free((void *)self);
+}
+
+int __HashMap_size(struct HashMap *self) {
+    return self->__count;
+}
+
+int getBucket(char *str, int buckets)
+{
+    unsigned int hash = 123456;
+    printf("\nHashing %s\n", str);
+    if (str == NULL)
+        return 0;
+    for (; *str; str++)
+    {
+        hash = (hash << 3) ^ *str;
+        printf("%c 0x%08x %d\n", *str, hash, hash % buckets);
+    }
+    return hash % buckets;
+}
+
+struct HashMapEntry * __HashMap_find(struct HashMap* self, char *key, int bucket) {
+    struct HashMapEntry *cur;
+    if (self == NULL || key == NULL) return NULL;
+    for (cur = self->__heads[bucket]; cur != NULL; cur = cur->__next) {
+        if (strcmp(key, cur->key) == 0) return cur;
     }
     return NULL;
 }
 
-int __Map_get(struct Map *self, char *key, int def)
-{
-    struct MapEntry *retval = __Map_find(self, key);
-    if (!retval)
-        return def;
+int __HashMap_get(struct HashMap* self, char *key, int def) {
+    int bucket = getBucket(key, self->__buckets);
+    struct HashMapEntry *retval = __HashMap_find(self, key, bucket);
+    if (retval == NULL) return def;
     return retval->value;
 }
 
-void __Map_put(struct Map* self, char *key, int value) {
-    struct MapEntry *retval = __Map_find(self, key);
-    if (retval) {
-        retval->value = value;
+void __HashMap_put(struct HashMap* self, char *key, int value) {
+    int bucket;
+    struct HashMapEntry *old, *new;
+    char *new_key;
+    bucket = getBucket(key, self->__buckets);
+
+    old = __HashMap_find(self, key, bucket);
+    if (old != NULL) {
+        old->value = value;
+        self->__count++;
         return;
     }
 
-    struct MapEntry *new_entry = malloc(sizeof(*new_entry));
-    if (!new_entry) {
-        fprintf(stderr, "Memory allocation failed\n");
-        return;
-    }
-    new_entry->__next = NULL;
+    new = malloc(sizeof(*new));
+    new->key = key;
+    new->value = value;
+    new->__next = NULL;
 
-    new_entry->key = malloc(strlen(key) + 1);
-    if (!new_entry->key) {
-        fprintf(stderr, "Memory allocation failed\n");
-        free(new_entry);
-        return;
-    }
-    strcpy(new_entry->key, key);
-    new_entry->value = value;
+    if (self->__heads[bucket] == NULL) self->__heads[bucket] = new;
+    if (self->__tails[bucket] != NULL) self->__tails[bucket]->__next = new;
 
-    if (self->__head == NULL) {
-        self->__head = new_entry;
-        self->__tail = new_entry;
-        new_entry->__prev = NULL;
-    } else {
-        self->__tail->__next = new_entry;
-        new_entry->__prev = self->__tail;
-        self->__tail = new_entry;
-    }
+    new->__prev = self->__tails[bucket];
+    self->__tails[bucket] = new;
     self->__count++;
 }
 
-int __Map_size(struct Map *self) {
-    return self->__count;
+void __HashMap_dump(struct HashMap* self) {
+    int i;
+    struct HashMapEntry *cur;
+
+    printf("\nObject HashMap@ %p count=%d buckets=%d\n", self, self->__count, self->__buckets);
+
+    for (i = 0; i < self->__buckets; i++) {
+        for (cur = self->__heads[i]; cur != NULL; cur = cur->__next) {
+            printf("%s=%d [%d]\n", cur->key, cur->value, i);
+        }
+    }
 }
 
-struct Map * Map_new() {
-    struct Map *p = malloc(sizeof(*p));
+struct HashMap *HashMap_new()
+{
+    struct HashMap *p = malloc(sizeof(*p));
 
-    p->__head = NULL;
-    p->__tail = NULL;
+    p->__buckets = 8;
+    for (int i = 0; i < p->__buckets; i++)
+    {
+        p->__heads[i] = NULL;
+        p->__tails[i] = NULL;
+    }
     p->__count = 0;
 
-    p->put = &__Map_put;
-    p->get = &__Map_get;
-    p->size = &__Map_size;
-    p->dump = &__Map_dump;
-    p->del = &__Map_del;
-
-    return p;
-}
-
-struct MapIter * MapIter_new(struct Map *self) {
-    struct MapIter *p = malloc(sizeof(*p));
-
-    p->__current = self->__head;
-    p->next = &__MapIter_next;
-    p->del = &__MapIter_del;
+    p->put = &__HashMap_put;
+    p->get = &__HashMap_get;
+    p->size = &__HashMap_size;
+    p->dump = &__HashMap_dump;
+    p->iter = &__HashMapIter_new;
+    p->del = &__HashMap_del;
 
     return p;
 }
 
 int main() {
-    struct Map * map = Map_new();
-    map->put(map, "Danny", 5);
-    map->put(map, "Lindsey", 15);
-    printf("Danny=%d\n", map->get(map, "Danny", 404));
-    printf("Zach=%d\n", map->get(map, "Zach", 404));
-    map->dump(map);
-    printf("Size=%d\n", map->size(map));
-    map->del(map);
+    struct HashMap *map = HashMap_new();
+    map->put(map, "Danny", 1);
+    map->put(map, "Lindsey", 2);
+    map->put(map, "Shawn", 3);
+    // map->dump(map);
+    struct HashMapIter * iter = map->iter(map);
+    struct HashMapEntry * current = iter->next(iter);
+    while (current) {
+        printf("%s=%d\n", current->key, current->value);
+        current = iter->next(iter);
+    }
 }
 
 
 
+
+
+
+
+
+
+
+// int hash(char *s) {
+//     int hashval;
+//     for(hashval = 0; *s != '\0';) {
+//         hashval += *s++;
+//     }
+//     hashval %= 20;
+//     return(hashval);
+// }
+
+// struct MapEntry {
+//     char *key; /* public */
+//     int value; /* public */
+//     struct MapEntry *__prev;
+//     struct MapEntry *__next;
+// };
+
+// struct MapIter {
+//     struct MapEntry *__current;
+
+//     struct MapEntry* (*next) (struct MapIter* self);
+//     void (*del) (struct MapIter* self);
+// };
+
+// struct Map {
+//     struct MapEntry *__head;
+//     struct MapEntry *__tail;
+//     int __count;
+
+//     /* Public methods*/
+//     void (*put) (struct Map* self, char *key, int value);
+//     int (*get) (struct Map* self, char *key, int def);
+//     int (*size) (struct Map* self);
+//     void (*dump) (struct Map* self);
+//     void (*del) (struct Map* self);
+//     struct MapIter * (*iter) (struct Map* self);
+// };
+
+// void __MapIter_del(struct MapIter *self) {
+//     free((void*) self);
+//     printf("Iter successfully freed.\n");
+// }
+
+// struct MapEntry *__MapIter_next(struct MapIter *self) {
+//     struct MapEntry *retval = self->__current;
+
+//     if (retval == NULL)
+//         return NULL;
+//     self->__current = self->__current->__next;
+//     return retval;
+// }
+
+// struct MapIter *__MapIter_new(struct Map *self)
+// {
+//     struct MapIter *p = malloc(sizeof(*p));
+
+//     p->__current = self->__head;
+//     p->next = &__MapIter_next;
+//     p->del = &__MapIter_del;
+
+//     return p;
+// }
+
+// void __Map_dump(struct Map* self) {
+//     struct MapEntry *cur;
+//     printf("Object Map count=%d\n", self->__count);
+//     for(cur = self->__head; cur != NULL; cur = cur->__next) {
+//         printf("%s=%d\n", cur->key, cur->value);
+//     }
+// }
+
+// void __Map_del(struct Map* self) {
+//     struct MapEntry *cur, *next;
+//     cur = self->__head;
+//     while(cur) {
+//         free(cur->key);
+//         next = cur->__next;
+//         free(cur);
+//         cur = next;
+//     }
+//     free((void *)self);
+//     printf("Map Successfully freed.\n");
+// }
+
+// struct MapEntry * __Map_find(struct Map* self, char *key) {
+//     struct MapEntry *cur;
+//     cur = self->__head;
+//     while(cur) {
+//         if (strcmp(cur->key, key) == 0) {
+//             return cur;
+//         }
+//         cur = cur->__next;
+//     }
+//     return NULL;
+// }
+
+// int __Map_get(struct Map *self, char *key, int def)
+// {
+//     struct MapEntry *retval = __Map_find(self, key);
+//     if (!retval)
+//         return def;
+//     return retval->value;
+// }
+
+// void __Map_put(struct Map* self, char *key, int value) {
+//     struct MapEntry *retval = __Map_find(self, key);
+//     if (retval) {
+//         retval->value = value;
+//         return;
+//     }
+
+//     struct MapEntry *new_entry = malloc(sizeof(*new_entry));
+//     if (!new_entry) {
+//         fprintf(stderr, "Memory allocation failed\n");
+//         return;
+//     }
+//     new_entry->__next = NULL;
+
+//     new_entry->key = malloc(strlen(key) + 1);
+//     if (!new_entry->key) {
+//         fprintf(stderr, "Memory allocation failed\n");
+//         free(new_entry);
+//         return;
+//     }
+//     strcpy(new_entry->key, key);
+//     new_entry->value = value;
+
+//     if (self->__head == NULL) {
+//         self->__head = new_entry;
+//         self->__tail = new_entry;
+//         new_entry->__prev = NULL;
+//     } else {
+//         self->__tail->__next = new_entry;
+//         new_entry->__prev = self->__tail;
+//         self->__tail = new_entry;
+//     }
+//     self->__count++;
+// }
+
+// int __Map_size(struct Map *self) {
+//     return self->__count;
+// }
+
+// struct Map * Map_new() {
+//     struct Map *p = malloc(sizeof(*p));
+
+//     p->__head = NULL;
+//     p->__tail = NULL;
+//     p->__count = 0;
+
+//     p->put = &__Map_put;
+//     p->get = &__Map_get;
+//     p->size = &__Map_size;
+//     p->dump = &__Map_dump;
+//     p->del = &__Map_del;
+//     p->iter = &__MapIter_new;
+
+//     return p;
+// }
+
+// int main() {
+//     struct Map * map = Map_new();
+//     map->put(map, "Danny", 5);
+//     map->put(map, "Lindsey", 15);
+//     map->put(map, "Shawn", 1);
+//     // printf("Danny=%d\n", map->get(map, "Danny", 404));
+//     // printf("Zach=%d\n", map->get(map, "Zach", 404));
+//     // map->dump(map);
+//     // printf("Size=%d\n", map->size(map));
+//     printf("\nIterate\n");
+//     struct MapIter * iter = map->iter(map);
+//     while(1) {
+//         struct MapEntry * cur = iter->next(iter);
+//         if (cur == NULL) break;
+//         printf("%s=%d\n", cur->key, cur->value);
+//     }
+//     iter->del(iter);
+
+//     map->del(map);
+// }
 
 // struct dnode
 // {
@@ -179,7 +387,6 @@ int main() {
 //     int (*len)(const struct pydict *self);
 //     char* (*get)(struct pydict *self, char *key);
 // };
-
 
 // int pydict_len(const struct pydict *self)
 // {
@@ -789,7 +996,6 @@ int main() {
 // char buf[BUFSIZE]; /* buffer for ungetch */
 // int bufp = 0; /* next free position in buf */
 
-
 // struct key {
 //     char *keyword;
 //     int keycount;
@@ -835,7 +1041,6 @@ int main() {
 //     return (LETTER);
 // }
 
-
 // int main() {
 //     int t;
 //     char word[MAXWORD];
@@ -869,9 +1074,6 @@ int main() {
 //     return(NULL);
 // }
 
-
-
-
 // struct key {
 //     char *keyword;
 //     int keycount;
@@ -885,7 +1087,7 @@ int main() {
 //         if (t == LETTER)
 //             if ((n = binary(word, keytab, NKEYS)) >= 0)
 //                 keytab[n].keycount++;
-    
+
 //     for (n = 0; n < NKEYS; n++)
 //         if (keytab[n].keycount > 0)
 //             printf("%4d %s\n", keytab[n].keycount, keytab[n].keyword);
@@ -935,7 +1137,6 @@ int main() {
 //         return(c);
 // }
 
-
 // struct date {
 //     int day;
 //     int month;
@@ -969,22 +1170,6 @@ int main() {
 //     pd->month = i;
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // #define MAXLINE 1000
 
 // struct lnode {
@@ -1010,7 +1195,6 @@ int main() {
 //     if (lst->head == NULL) lst->head = new;
 // }
 
-
 // int main() {
 //     char line[MAXLINE];
 //     struct list mylist;
@@ -1027,9 +1211,6 @@ int main() {
 //         printf("%s", current->text);
 //     }
 // }
-
-
-
 
 // #define LINES 100
 
@@ -1086,8 +1267,6 @@ int main() {
 //     *py = temp;
 // }
 
-
-
 // int main(int argc, char *argv[]) {
 //     int i;
 
@@ -1095,12 +1274,10 @@ int main() {
 //         printf("%s%c", argv[i], (i < argc-1) ? ' ' : '\n');
 // }
 
-
 // int main(int argc, char *argv[]) {
 //     while (--argc > 0)
 //         printf("%s%c", *++argv, (argc > 1) ? ' ' : '\n');
 // }
-
 
 // int main(int argc, char *argv[]) {
 //     while (--argc > 0)
@@ -1152,9 +1329,6 @@ int main() {
 //         }
 // }
 
-
-
-
 // int getline(char s[], int maxlen)
 // {
 //     int c, i;
@@ -1185,10 +1359,6 @@ int main() {
 //     return -1;
 // }
 
-
-
-
-
 // char *month_name(int n) {
 //     /* return name of the n-th month */
 //     static char *name[] = {
@@ -1210,8 +1380,6 @@ int main() {
 //     return((n < 1 || n > 12) ? name[0] : name[n]);
 // }
 
-
-
 // #define LINES 100 /* max lines to be sorted */
 // #define MAXLEN 1000
 // #define ALLOCSIZE 1000 /* size of available space */
@@ -1231,7 +1399,6 @@ int main() {
 //     else
 //         printf("input too big to sort\n");
 // }
-
 
 // int get_line(char s[], int maxlen) {
 //     int c, i;
@@ -1271,7 +1438,6 @@ int main() {
 //         printf("%s\n", *lineptr++);
 // }
 
-
 // int sort(char *v[], int n) {
 //     int gap, i, j;
 //     char *temp;
@@ -1298,9 +1464,6 @@ int main() {
 //         return (NULL);
 //     }
 // }
-
-
-
 
 // static int day_tab[2][13] = {
 //     {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
@@ -1336,11 +1499,6 @@ int main() {
 //     *pday = yearday;
 // }
 
-
-
-
-
-
 // char *strsave(char *s) {
 //     /* save string s somewhere */
 //     char *p, *alloc();
@@ -1349,9 +1507,6 @@ int main() {
 //         strcpy(p, s);
 //     return(p);
 // }
-
-
-
 
 // int strcmp(char s[], char t[]) {
 //     /* return <0 if s < t, 0 if s==t, >0 if s>t */
@@ -1372,7 +1527,6 @@ int main() {
 //     return(*s - *t);
 // }
 
-
 // int strcopy(char s[], char t[]) {
 //     /* copy t to s */
 //     int i;
@@ -1380,7 +1534,7 @@ int main() {
 //     i = 0;
 //     while ((s[i] = t[i]) != '\0')
 //         i++;
-    
+
 // }
 
 // int strcpy(char *s, char *t) {
@@ -1396,10 +1550,6 @@ int main() {
 //     while (*s++ = *t++)
 //         ;
 // }
-
-
-
-
 
 // int main() {
 //     int str_len();
@@ -1447,11 +1597,6 @@ int main() {
 //         allocp = p;
 // }
 
-
-
-
-
-
 // int strlen( char *s) {
 //     int n;
 
@@ -1459,10 +1604,6 @@ int main() {
 //         n++;
 //     return(n);
 // }
-
-
-
-
 
 // #define SIZE 10
 
@@ -1492,13 +1633,6 @@ int main() {
 //     return(c);
 // }
 
-
-
-
-
-
-
-
 // int main() {
 //     int x, y;
 //     x = 10;
@@ -1517,13 +1651,6 @@ int main() {
 //     *y = temp;
 // }
 
-
-
-
-
-
-
-
 // int main() {
 //     int x = 42;  // A regular variable
 //     int *p = &x; // p holds the address of x
@@ -1532,10 +1659,6 @@ int main() {
 //     *p = 100;                // Change the value at the address stored in p
 //     printf("x = %d\n", x);   // Output: x = 100
 // }
-
-
-
-
 
 // int main() {
 //     char ca[10], *cp;
@@ -1548,11 +1671,6 @@ int main() {
 //     printf("ia %p ip %p\n", ia, ip);
 // }
 
-
-
-
-
-
 // int main() {
 //     int x, y;
 //     int* px;
@@ -1562,7 +1680,6 @@ int main() {
 //     y = *px;
 //     printf("%d %p %d\n", x, px, y);
 // }
-
 
 // int main() {
 //     int x, y;
@@ -1581,12 +1698,6 @@ int main() {
 //     a = 1;
 //     *pb = a;
 // }
-
-
-
-
-
-
 
 // printd(int n) {
 //     /* print n in decimal */
@@ -1620,9 +1731,6 @@ int main() {
 
 //     putchar(n % 10 + '0');
 // }
-
-
-
 
 // #define MAXOP 20 /* max size of operand, operator */
 // #define NUMBER '0' /* signal that number found */
@@ -1751,8 +1859,6 @@ int main() {
 //         }
 // }
 
-
-
 // double atof(s) /* convert string to double */
 // char s[];
 // {
@@ -1774,8 +1880,6 @@ int main() {
 //     }
 //     return(sign * val / power);
 // }
-
-
 
 // #define MAXLINE 1000
 
@@ -1817,14 +1921,6 @@ int main() {
 //     return(-1);
 // }
 
-
-
-
-
-
-
-
-
 // void itoa(char s[], int n);
 // void printBinary(int binary);
 // void reverse(char s[]);
@@ -1863,7 +1959,6 @@ int main() {
 //     reverse(s);
 // }
 
-
 // void reverse(char s[])  /* reverse string s in place */
 // {
 //     int c, i, j;
@@ -1884,10 +1979,6 @@ int main() {
 //     return i;
 // }
 
-
-
-
-
 // void shell(int v[], int n) { /* sort v[0]...v[n-1] into increasing order */
 //     int gap, i, j, temp;
 
@@ -1900,10 +1991,6 @@ int main() {
 //             }
 // }
 
-
-
-
-
 // int atoi(char s[]);
 
 // int main() {
@@ -1911,7 +1998,6 @@ int main() {
 
 //     printf("%d\n", atoi(str));
 // }
-
 
 // int atoi(char s[]) /* convert numeric strings to integer */
 // {
@@ -1925,11 +2011,7 @@ int main() {
 //     for (n = 0; s[i] >= '0' && s[i] <= '9'; i++)
 //         n = 10 * n + s[i] - '0';
 //     return (sign * n);
-// } 
-
-
-
-
+// }
 
 // int main() { /* count digits, white space, others */
 //     int c, i, nwhite, nother, ndigit[10];
@@ -1968,12 +2050,6 @@ int main() {
 //     printf("\nwhite space = %d, other = %d\n", nwhite, nother);
 // }
 
-
-
-
-
-
-
 // int binary(int x, int v[], int n);
 
 // int main() {
@@ -2001,12 +2077,6 @@ int main() {
 //     return(-1);
 // }
 
-
-
-
-
-
-
 // int main() {
 //     int bitcount(unsigned n);
 //     printf("%d", bitcount(5255));
@@ -2022,9 +2092,6 @@ int main() {
 //             b++;
 //     return(b);
 // }
-
-
-
 
 // char* strcat(char s[], char t[]);
 
@@ -2044,7 +2111,6 @@ int main() {
 //     return s;
 // }
 
-
 // int main() {
 //     char* squeeze(char s[], int c);
 //     char str[] = "hello";
@@ -2054,15 +2120,13 @@ int main() {
 
 // char* squeeze(char s[], int c) {
 //     int i, j;
-    
+
 //     for (i = j = 0; s[i] != '\0'; i++)
 //         if (s[i] != c)
 //             s[j++] = s[i];
 //     s[j] = '\0';
 //     return s;
 // }
-
-
 
 // #define N 4
 
@@ -2085,9 +2149,6 @@ int main() {
 //         putchar(' ');
 //     }
 // }
-
-
-
 
 // #define MAXLINE 1000
 
@@ -2132,11 +2193,6 @@ int main() {
 //     while ((save[i] = line[i]) != '\0')
 //         i++;
 // }
-
-
-
-
-
 
 // #define MAXLINE 1000
 
@@ -2185,8 +2241,6 @@ int main() {
 //         i++;
 // }
 
-
-
 // int main() {
 //     int lowercase();
 //     int c;
@@ -2203,9 +2257,6 @@ int main() {
 //     }
 //     return c;
 // }
-
-
-
 
 // int main() {
 //     int i;
@@ -2224,7 +2275,6 @@ int main() {
 //         p = p * x;
 //     return (p);
 // }
-
 
 // #define IN 1
 // #define OUT 0
@@ -2291,7 +2341,7 @@ int main() {
 //     nwhite = nother = 0;
 //     for (i = 0; i < 10; i++)
 //         ndigit[i] = 0;
-    
+
 //     while ((c = getchar()) != EOF)
 //         if (c >= '0' && c <= '9')
 //             ++ndigit[c -'0'];
@@ -2308,7 +2358,6 @@ int main() {
 //     printf("\nwhite space = %d, other = %d\n", nwhite, nother);
 // }
 
-
 // int main() {
 //     int c, prev = 0;
 
@@ -2319,7 +2368,6 @@ int main() {
 //         prev = c;
 //     }
 // }
-
 
 // int main() {
 //     int c, blanks;
@@ -2332,7 +2380,6 @@ int main() {
 //     printf("%d\n", blanks);
 // }
 
-
 // int main() {
 //     int c, nl;
 
@@ -2342,7 +2389,6 @@ int main() {
 //             ++nl;
 //     printf("%d\n", nl);
 // }
-
 
 // int main() {
 //     double nc;
@@ -2362,14 +2408,12 @@ int main() {
 //     printf("%ld\n", nc);
 // }
 
-
 // int main() {
 //     // we use int instead of char for c in case it ends up being an EOF file
 //     int c;
 //     while ((c=getchar()) != EOF)
 //         putchar(c);
 // }
-
 
 // int main() {
 //     int c;
@@ -2381,14 +2425,11 @@ int main() {
 //     }
 // }
 
-
 // int main() {
 //     char c;
 //     c = getchar();
 //     printf("%c", c);
 // }
-
-
 
 // #define LOWER 0
 // #define UPPER 300
@@ -2398,23 +2439,20 @@ int main() {
 //     int fahr;
 //     for (fahr = UPPER; fahr >= LOWER; fahr = fahr - STEP)
 //         printf("%4d %6.1f\n", fahr, (5.0/9.0) * (fahr-32));
-// } 
+// }
 
+// int lower, upper, step;
+// float fahr, celsius;
+// lower = 0;
+// upper = 300;
+// step = 20;
+// fahr = lower;
 
-
-    // int lower, upper, step;
-    // float fahr, celsius;
-    // lower = 0;
-    // upper = 300;
-    // step = 20;
-    // fahr = lower;
-
-    // while (fahr <= upper) {
-    //     celsius = (5.0/9.0) * (fahr-32.0);
-    //     printf("%4.0f %6.1f\n", fahr, celsius);
-    //     fahr = fahr + step;
-    // }
-
+// while (fahr <= upper) {
+//     celsius = (5.0/9.0) * (fahr-32.0);
+//     printf("%4.0f %6.1f\n", fahr, celsius);
+//     fahr = fahr + step;
+// }
 
 // int main() {
 //     char x[] = "Hello";
@@ -2476,17 +2514,17 @@ int main() {
 //     return i;
 // }
 
-    // char x[3];
-    // x[0] = 'H';
-    // x[1] = 'O';
-    // x[2] = 'E';
+// char x[3];
+// x[0] = 'H';
+// x[1] = 'O';
+// x[2] = 'E';
 
-    // printf("%s\n", x);
+// printf("%s\n", x);
 
-    // char x[10];
-    // int i;
-    // for (i=0; i<100; i++) x[i] = '*';
-    // printf("%s\n", x);
+// char x[10];
+// int i;
+// for (i=0; i<100; i++) x[i] = '*';
+// printf("%s\n", x);
 
 // int main() {
 //     int mymult();
@@ -2503,62 +2541,61 @@ int main() {
 //     return c;
 // }
 
+// int guess;
+// while(scanf("%d", &guess) != EOF) {
+//     if (guess == 42) {
+//         printf("Nice work!\n");
+//         break;
+//     }
+//     else if (guess < 42) {
+//         printf("Too low\n");
+//     }
+//     else {
+//         printf("Too high\n");
+//     }
+// }
 
-    // int guess;
-    // while(scanf("%d", &guess) != EOF) {
-    //     if (guess == 42) {
-    //         printf("Nice work!\n");
-    //         break;
-    //     }
-    //     else if (guess < 42) {
-    //         printf("Too low\n");
-    //     }
-    //     else {
-    //         printf("Too high\n");
-    //     }
-    // }
+// int first = 1;
+// int val, maxval, minval;
+// while(scanf("%d", &val) != EOF) {
+//     if (first || val > maxval) maxval = val;
+//     if (first || val < minval) minval = val;
+//     first = 0;
+// }
 
-    // int first = 1;
-    // int val, maxval, minval;
-    // while(scanf("%d", &val) != EOF) {
-    //     if (first || val > maxval) maxval = val;
-    //     if (first || val < minval) minval = val;
-    //     first = 0;
-    // }
+// printf("Maximum %d\n", maxval);
+// printf("Minimum %d\n", minval);
 
-    // printf("Maximum %d\n", maxval);
-    // printf("Minimum %d\n", minval);
+// int i;
+// for (i=0; i<5; i++) {
+//     printf("%d\n", i);
+// }
 
-    // int i;
-    // for (i=0; i<5; i++) {
-    //     printf("%d\n", i);
-    // }
+// char line[1000];
+// FILE *hand;
+// hand = fopen("romeo.txt", "r");
+// while( fgets(line, 1000, hand) != NULL) {
+//     printf("%s", line);
+// }
+// fclose(hand);
 
-    // char line[1000];
-    // FILE *hand;
-    // hand = fopen("romeo.txt", "r");
-    // while( fgets(line, 1000, hand) != NULL) {
-    //     printf("%s", line);
-    // }
-    // fclose(hand);
+// char line[1000];
+// printf("Enter line\n");
+// scanf("%[^\n]1000s", line);
+// printf("Line: %s\n", line);
 
-    // char line[1000];
-    // printf("Enter line\n");
-    // scanf("%[^\n]1000s", line);
-    // printf("Line: %s\n", line);
+// char name[100];
+// printf("Enter name\n");
+// scanf("%100s", name);
+// printf("Hello %s\n", name);
 
-    // char name[100];
-    // printf("Enter name\n");
-    // scanf("%100s", name);
-    // printf("Hello %s\n", name);
+// int usf, euf;
+// printf("Enter US Floor\n");
+// scanf("%d", &usf);
+// euf = usf - 1;
+// printf("EU Floor %d\n", euf);
 
-    // int usf, euf;
-    // printf("Enter US Floor\n");
-    // scanf("%d", &usf);
-    // euf = usf - 1;
-    // printf("EU Floor %d\n", euf);
-
-    // printf("Hello world\n");
-    // printf("Answer %d\n", 42);
-    // printf("Name %s\n", "Sarah");
-    // printf("x %.1f i %d\n", 3.5, 100);
+// printf("Hello world\n");
+// printf("Answer %d\n", 42);
+// printf("Name %s\n", "Sarah");
+// printf("x %.1f i %d\n", 3.5, 100);
