@@ -63,8 +63,8 @@ struct TreeMapEntry * __TreeMapEntry_new(char *key, int value) {
 }
 
 void __TreeMapEntry_put(struct TreeMap *self, char *key, int value) {
-    struct TreeMapEntry *cur, *parent;
-    parent = NULL;
+    struct TreeMapEntry *cur, *parent, *prev;
+    parent = prev = NULL;
     int cmp;
     cur = self->__root;
     while(cur != NULL) {
@@ -75,21 +75,33 @@ void __TreeMapEntry_put(struct TreeMap *self, char *key, int value) {
             return;
         } 
         if (cmp < 0) {
+            prev = cur;
             cur = cur->__left;
         } else {
+            prev = cur;
             cur = cur->__right;
         }
     }
     struct TreeMapEntry *new_entry = __TreeMapEntry_new(key, value);
     if (parent == NULL) {
         self->__root = new_entry;
-        // self->__head = new_entry;
+        self->__head = new_entry;
     } else if (cmp < 0) {
-        // new_entry->__next = parent;
+        new_entry->__next = parent;
         parent->__left = new_entry;
-        // self->__head = new_entry;
+        if (prev->__next != NULL && strcmp(prev->__next->key, parent->key) == 0) {
+            prev->__next = new_entry;
+        }
+        if (self->__head == NULL || strcmp(self->__head->key, new_entry->key) > 0) {
+            self->__head = new_entry;
+        }
     } else {
-        // parent->__next = new_entry;
+        if (parent->__next == NULL) {
+            parent->__next = new_entry;
+        } else {
+            new_entry->__next = parent->__next;
+            parent->__next = new_entry;
+        }
         parent->__right = new_entry;
     }
     self->__count++;
@@ -156,14 +168,13 @@ int main() {
     map->put(map, "e", 0);
     map->put(map, "x", 0);
 
-    map->dump(map->__root, 0);
-    // printf("%d\n", map->get(map, "a", 404));
+    // map->dump(map->__root, 0);
 
     struct TreeMapIter *iter = TreeMapIter_new(map);
     struct TreeMapEntry *cur;
-    // cur = iter->next(iter);
-    // while(cur != NULL) {
-    //     printf("%s=%d\n", cur->key, cur->value);
-    //     cur = iter->next(iter);
-    // }
+    cur = iter->next(iter);
+    while(cur != NULL) {
+        printf("%s=%d\n", cur->key, cur->value);
+        cur = iter->next(iter);
+    }
 }
