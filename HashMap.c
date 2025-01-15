@@ -45,8 +45,7 @@ struct HashMapEntry *__HashMapIter_next(struct HashMapIter *self)
 {
     struct HashMapEntry *retval;
 
-    while (self->__current == NULL)
-    {
+    while (self->__current == NULL) {
         self->__bucket++;
         if (self->__bucket >= self->__map->__buckets)
             return NULL;

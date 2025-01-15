@@ -78,7 +78,7 @@ void __TreeMap_dump_postorder(struct TreeMapEntry *root) {
     }
 }
 
-int __TreeMap_get(struct TreeMap *self, char *key, int def) {
+int __TreeMapEntry_get(struct TreeMap *self, char *key, int def) {
     struct TreeMapEntry *cur;
     int cmp;
 
@@ -148,7 +148,7 @@ struct TreeMap * TreeMap_new() {
     tree->__root = NULL;
     tree->__count = 0;
     tree->put = &__TreeMap_put;
-    tree->get = &__TreeMap_get;
+    tree->get = &__TreeMapEntry_get;
     tree->dump = &__TreeMap_dump;
     tree->dump_inorder = &__TreeMap_dump_inorder;
     tree->dump_preorder = &__TreeMap_dump_preorder;
@@ -161,7 +161,7 @@ struct TreeMap * TreeMap_new() {
 int main() {
     struct TreeMap *map = TreeMap_new();
     
-    map->put(map, "h", 22);
+    map->put(map, "danny", 22);
     map->put(map, "h", 42);
     map->put(map, "d", 8);
     map->put(map, "b", 123);
@@ -169,7 +169,8 @@ int main() {
     map->put(map, "k", 9);
     map->put(map, "m", 68);
 
-    printf("%d\n", map->get(map, "d", 404));
+    printf("%d\n", map->get(map, "danny", 404));
+
 
     // map->dump(map->__root, 0);
 
