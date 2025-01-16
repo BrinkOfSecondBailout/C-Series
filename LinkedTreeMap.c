@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <ctype.h>
 
 struct TreeMap {
     struct TreeMapEntry *__head;
@@ -11,6 +12,8 @@ struct TreeMap {
     int (*get)(struct TreeMap *self, char *key, int def);
     void (*put)(struct TreeMap *self, char *key, int value);
     void (*dump)(struct TreeMapEntry *root, int depth);
+    void (*del)(struct TreeMap *self);
+    struct TreeMapIter *(*iter)(struct TreeMap *self);
 };
 
 struct TreeMapEntry {
@@ -118,17 +121,10 @@ void __TreeMap_dump(struct TreeMapEntry *root, int depth) {
     }
 }
 
-struct TreeMap * TreeMap_new() {
-    struct TreeMap *map = malloc(sizeof(*map));
-    map->__count = 0;
-    map->__head = NULL;
-    map->__root = NULL;
-
-    map->get = &__TreeMapEntry_get;
-    map->put = &__TreeMapEntry_put;
-    map->dump = &__TreeMap_dump;
-    return map;
+void __TreeMap_del(struct TreeMap *self) {
+    free((void *)self);
 }
+
 
 struct TreeMapEntry * __TreeMapIter_next(struct TreeMapIter* self) {
     struct TreeMapEntry *retval;
@@ -153,22 +149,76 @@ struct TreeMapIter * TreeMapIter_new(struct TreeMap* tree) {
     return iter;
 }
 
+struct TreeMap * TreeMap_new() {
+    struct TreeMap *map = malloc(sizeof(*map));
+    map->__count = 0;
+    map->__head = NULL;
+    map->__root = NULL;
+
+    map->get = &__TreeMapEntry_get;
+    map->put = &__TreeMapEntry_put;
+    map->dump = &__TreeMap_dump;
+    map->iter = &TreeMapIter_new;
+    map->del = &__TreeMap_del;
+    return map;
+}
+
 int main() {
     struct TreeMap *map = TreeMap_new();
+    struct TreeMapEntry *cur;
+    struct TreeMapIter *iter;
+    char name[100];
+    char word[100];
+    int i, j;
+    int count, maxvalue;
+    char *maxkey;
 
-    map->put(map, "j", 3);
-    map->put(map, "c", 23);
-    map->put(map, "l", 4);
-    map->put(map, "b", 7);
-    map->put(map, "f", 6);
-    map->put(map, "m", 55);
-    map->put(map, "o", 10);
-    map->put(map, "n", 511);
-    map->put(map, "i", 42);
-    map->put(map, "a", 77);
-    map->put(map, "e", 9);
-    map->put(map, "g", 2);
-    map->put(map, "h", 8);
+    printf("Enter file name: ");
+    scanf("%s", name);
+
+    FILE *fp = fopen(name, "r");
+    while (fscanf(fp, "%s", word) != EOF) {
+        for (i = 0, j = 0; word[i] != '\0'; i++) {
+            if ( !isalpha(word[i])) continue;
+            word[j++] = tolower(word[i]);
+        }
+        word[j] = '\0';
+        count = map->get(map, word, 0);
+        map->put(map, word, count + 1);
+    }
+    fclose(fp);
+    map->dump(map->__root, 0);
+
+    maxkey = NULL;
+    maxvalue = -1;
+    iter = map->iter(map);
+    while(1) {
+        cur = iter->next(iter);
+        if (cur == NULL) break;
+        if (maxkey == NULL || cur->value > maxvalue) {
+            maxkey = cur->key;
+            maxvalue = cur->value;
+        }
+    }
+    iter->del(iter);
+    printf("\n%s %d\n", maxkey, maxvalue);
+
+    map->del(map);
+
+
+    // map->put(map, "j", 3);
+    // map->put(map, "c", 23);
+    // map->put(map, "l", 4);
+    // map->put(map, "b", 7);
+    // map->put(map, "f", 6);
+    // map->put(map, "m", 55);
+    // map->put(map, "o", 10);
+    // map->put(map, "n", 511);
+    // map->put(map, "i", 42);
+    // map->put(map, "a", 77);
+    // map->put(map, "e", 9);
+    // map->put(map, "g", 2);
+    // map->put(map, "h", 8);
 
     // map->dump(map->__root, 0);
 
@@ -181,5 +231,4 @@ int main() {
     // }
     // iter->del(iter);
 
-    printf("%d\n", map->get(map, "o", 404));
 }
