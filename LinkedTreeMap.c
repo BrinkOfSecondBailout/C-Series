@@ -63,12 +63,11 @@ struct TreeMapEntry * __TreeMapEntry_new(char *key, int value) {
 }
 
 void __TreeMapEntry_put(struct TreeMap *self, char *key, int value) {
-    struct TreeMapEntry *cur, *parent, *smaller, *larger;
-    smaller = larger = parent = NULL;
+    struct TreeMapEntry *cur, *smaller, *larger;
+    smaller = larger = NULL;
     int cmp;
     cur = self->__root;
     while(cur != NULL) {
-        parent = cur;
         cmp = strcmp(key, cur->key);
         if (cmp == 0) {
             cur->value = value;
@@ -84,18 +83,18 @@ void __TreeMapEntry_put(struct TreeMap *self, char *key, int value) {
     }
 
     struct TreeMapEntry *new_entry = __TreeMapEntry_new(key, value);
-    if (parent == NULL) {
+    if (smaller == NULL && larger == NULL) {
         self->__head = new_entry;
         self->__root = new_entry;
     } else if (cmp < 0) {
-        if (self->__head == NULL || smaller == NULL) 
+        if (smaller == NULL) 
             self->__head = new_entry;
-        parent->__left = new_entry;
+        larger->__left = new_entry;
         new_entry->__next = larger;
         if (smaller != NULL)
             smaller->__next = new_entry;
     } else {
-        parent->__right = new_entry;
+        smaller->__right = new_entry;
         smaller->__next = new_entry;
         if (larger != NULL)
             new_entry->__next = larger;
@@ -164,6 +163,7 @@ int main() {
     map->put(map, "m", 55);
     map->put(map, "o", 10);
     map->put(map, "n", 511);
+    map->put(map, "i", 42);
     map->put(map, "a", 77);
     map->put(map, "e", 9);
     map->put(map, "g", 2);
