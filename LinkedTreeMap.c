@@ -88,7 +88,7 @@ void __TreeMapEntry_put(struct TreeMap *self, char *key, int value) {
         self->__head = new_entry;
         self->__root = new_entry;
     } else if (cmp < 0) {
-        if (self->__head == NULL || strcmp(self->__head->key, new_entry->key) > 0) 
+        if (self->__head == NULL || smaller == NULL) 
             self->__head = new_entry;
         parent->__left = new_entry;
         new_entry->__next = larger;
@@ -156,19 +156,18 @@ struct TreeMapIter * TreeMapIter_new(struct TreeMap* tree) {
 int main() {
     struct TreeMap *map = TreeMap_new();
 
-    map->put(map, "j", 0);
-    map->put(map, "c", 0);
-    map->put(map, "l", 0);
-    map->put(map, "b", 0);
-    map->put(map, "f", 0);
-    map->put(map, "k", 0);
-    map->put(map, "m", 0);
-    map->put(map, "o", 0);
-    map->put(map, "n", 0);
-    map->put(map, "a", 0);
-    map->put(map, "e", 0);
-    map->put(map, "g", 0);
-    map->put(map, "h", 0);
+    map->put(map, "j", 3);
+    map->put(map, "c", 23);
+    map->put(map, "l", 4);
+    map->put(map, "b", 7);
+    map->put(map, "f", 6);
+    map->put(map, "m", 55);
+    map->put(map, "o", 10);
+    map->put(map, "n", 511);
+    map->put(map, "a", 77);
+    map->put(map, "e", 9);
+    map->put(map, "g", 2);
+    map->put(map, "h", 8);
 
     // map->dump(map->__root, 0);
 
@@ -176,7 +175,7 @@ int main() {
     struct TreeMapEntry *cur;
     cur = iter->next(iter);
     while(cur != NULL) {
-        printf("%s\n", cur->key);
+        printf("%s = %d\n", cur->key, cur->value);
         cur = iter->next(iter);
     }
     iter->del(iter);
