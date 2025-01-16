@@ -10,6 +10,7 @@ struct TreeMap {
 
     int (*get)(struct TreeMap *self, char *key, int def);
     void (*put)(struct TreeMap *self, char *key, int value);
+    void (*inorder)(struct TreeMap *self, struct TreeMapEntry *grandparent, struct TreeMapEntry *parent, struct TreeMapEntry *root);
     void (*dump)(struct TreeMapEntry *root, int depth);
 };
 
@@ -63,48 +64,52 @@ struct TreeMapEntry * __TreeMapEntry_new(char *key, int value) {
 }
 
 void __TreeMapEntry_put(struct TreeMap *self, char *key, int value) {
-    struct TreeMapEntry *cur, *parent, *prev;
-    parent = prev = NULL;
+    struct TreeMapEntry *cur, *parent;
+    parent = NULL;
     int cmp;
     cur = self->__root;
     while(cur != NULL) {
         parent = cur;
-        cmp = strcmp(cur->key, key);
+        cmp = strcmp(key, cur->key);
         if (cmp == 0) {
             cur->value = value;
             return;
         } 
         if (cmp < 0) {
-            prev = cur;
             cur = cur->__left;
         } else {
-            prev = cur;
             cur = cur->__right;
         }
     }
     struct TreeMapEntry *new_entry = __TreeMapEntry_new(key, value);
     if (parent == NULL) {
         self->__root = new_entry;
-        self->__head = new_entry;
     } else if (cmp < 0) {
-        new_entry->__next = parent;
         parent->__left = new_entry;
-        if (prev->__next != NULL && strcmp(prev->__next->key, parent->key) == 0) {
-            prev->__next = new_entry;
-        }
-        if (self->__head == NULL || strcmp(self->__head->key, new_entry->key) > 0) {
-            self->__head = new_entry;
-        }
     } else {
-        if (parent->__next == NULL) {
-            parent->__next = new_entry;
-        } else {
-            new_entry->__next = parent->__next;
-            parent->__next = new_entry;
-        }
         parent->__right = new_entry;
     }
     self->__count++;
+}
+
+void __TreeMap_inorder_traversal(struct TreeMap *self, struct TreeMapEntry *grandparent, struct TreeMapEntry *parent, struct TreeMapEntry *root) {
+    if (root != NULL) {
+        if (root->__left != NULL && root->__right != NULL) {
+            __TreeMap_inorder_traversal(self, root, root, root->__left);
+        } else {
+            __TreeMap_inorder_traversal(self, grandparent, root, root->__left);
+        }
+        if (self->__head == NULL) {
+            self->__head = root;
+        }
+        if (root->__right != NULL) {
+            root->__next = root->__right;
+        }
+        __TreeMap_inorder_traversal(self, grandparent, root, root->__right);
+        if (grandparent != NULL && root->__next == NULL) {
+            root->__next = grandparent;
+        }
+    }
 }
 
 void __TreeMap_dump(struct TreeMapEntry *root, int depth) {
@@ -129,15 +134,17 @@ struct TreeMap * TreeMap_new() {
 
     map->get = &__TreeMapEntry_get;
     map->put = &__TreeMapEntry_put;
+    map->inorder = &__TreeMap_inorder_traversal;
     map->dump = &__TreeMap_dump;
     return map;
 }
 
 struct TreeMapEntry * __TreeMapIter_next(struct TreeMapIter* self) {
     struct TreeMapEntry *retval;
-    if (self->__current == NULL) return NULL;
     retval = self->__current;
-    self->__current = self->__current->__next;
+    if (self->__current != NULL) {
+        self->__current = self->__current->__next;
+    }
     return retval;
 }
 
@@ -146,6 +153,10 @@ void __TreeMapIter_del(struct TreeMapIter * self) {
 }
 
 struct TreeMapIter * TreeMapIter_new(struct TreeMap* tree) {
+    struct TreeMapEntry *grandparent, *parent;
+    grandparent = parent  = NULL;
+    tree->inorder(tree, grandparent, parent, tree->__root);
+    // printf("%s\n", tree->__head->__next->__next->__next->__next->__next->__next->key);
     struct TreeMapIter *iter = malloc(sizeof(*iter));
     iter->__tree = tree;
     iter->__current = tree->__head;
@@ -158,15 +169,19 @@ struct TreeMapIter * TreeMapIter_new(struct TreeMap* tree) {
 int main() {
     struct TreeMap *map = TreeMap_new();
 
-    map->put(map, "g", 0);
+    map->put(map, "j", 0);
     map->put(map, "c", 0);
-    map->put(map, "i", 0);
+    map->put(map, "l", 0);
+    map->put(map, "b", 0);
     map->put(map, "f", 0);
+    map->put(map, "k", 0);
+    map->put(map, "m", 0);
+    map->put(map, "o", 0);
+    map->put(map, "n", 0);
     map->put(map, "a", 0);
-    map->put(map, "h", 0);
-    map->put(map, "d", 0);
     map->put(map, "e", 0);
-    map->put(map, "x", 0);
+    map->put(map, "g", 0);
+    map->put(map, "h", 0);
 
     // map->dump(map->__root, 0);
 
@@ -174,7 +189,7 @@ int main() {
     struct TreeMapEntry *cur;
     cur = iter->next(iter);
     while(cur != NULL) {
-        printf("%s=%d\n", cur->key, cur->value);
+        printf("%s\n", cur->key);
         cur = iter->next(iter);
     }
 }

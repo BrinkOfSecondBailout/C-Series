@@ -167,15 +167,15 @@ int main() {
     map->put(map, "b", 123);
     map->put(map, "f", 6);
     map->put(map, "k", 9);
-    map->put(map, "m", 68);
+    map->put(map, "a", 68);
 
     printf("%d\n", map->get(map, "danny", 404));
 
 
     // map->dump(map->__root, 0);
 
-    // printf("\nInorder:\n");
-    // map->dump_inorder(map->__root);
+    printf("\nInorder:\n");
+    map->dump_inorder(map->__root);
 
     // printf("\nPreorder:\n");
     // map->dump_preorder(map->__root);
