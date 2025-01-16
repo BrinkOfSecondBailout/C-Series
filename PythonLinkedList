@@ -1,0 +1,33 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+
+#define DEFAULT_ALLOC 2;
+
+struct p1list {
+    int alloc;
+    int length;
+    char **items;
+};
+
+struct p1list * p1list_new() {
+    struct p1list *p = malloc(sizeof(*p));
+    p->alloc = DEFAULT_ALLOC;
+    p->length = 0;
+    p->items = malloc(p->alloc * sizeof(char *));
+    return p;
+}
+
+void p1list_append(struct p1list *self, char *str) {
+    if (self->length >= self->alloc) {
+        printf("Extending from %d to %d\n", self->alloc, self->alloc + 2);
+        self->alloc = self->alloc + 2;
+        self->items = realloc(self->items, (self->alloc * sizeof(char *)));
+    }
+
+    char *saved = malloc(strlen(str) + 1);
+    strcpy(saved, str);
+    self->items[self->length] = saved;
+    self->length++;
+}
