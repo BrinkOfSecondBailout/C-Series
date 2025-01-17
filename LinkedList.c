@@ -43,3 +43,26 @@ void list_append(struct list *self, char *str) {
     }
     self->count++;
 }
+
+void list_print(struct list *self) {
+    struct lnode *cur = self->head;
+    printf("[");
+    while(cur) {
+        printf("'%s'", cur->text);
+        cur = cur->next;
+        if (cur) printf(", ");
+    }
+    printf("]");
+}
+
+void list_del(struct list *self) {
+    struct lnode *cur, *next;
+    cur = self->head;
+    while(cur) {
+        free(cur->text);
+        next = cur->next;
+        free(cur);
+        cur = next;
+    }
+    free((void *)self);
+}

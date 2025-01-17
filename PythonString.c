@@ -53,10 +53,10 @@ void p1str_appends(struct p1str *self, char *str) {
 void p1str_set(struct p1str *self, char *str) {
     self->length = 0;
     self->data[0] = '\0';
-    plstr_appends(self, str);
+    p1str_appends(self, str);
 }
 
-struct p1st *p1str_assign(struct p1str *self) {
+struct p1str *p1str_assign(struct p1str *self) {
     (self->refs)++;
     return self;
 }
@@ -75,7 +75,7 @@ void p1str_del(struct p1str *self) {
 int main(void) {
     struct p1str *x = p1str_new();
     printf("String x = %s @ %p\n", p1str_str(x), (void*)x);
-    pstr_dump(x);
+    p1str_dump(x);
 
     p1str_append(x, 'H');
     p1str_dump(x);
@@ -84,4 +84,13 @@ int main(void) {
     p1str_dump(x);
 
     p1str_set(x, "Completely new string");
+    printf("String %s\n", p1str_str(x));
+    printf("Length = %d\n", p1str_len(x));
+
+    struct p1str * y = p1str_assign(x);
+    printf("String x = %s @ %p\n", p1str_str(x), (void *) x);
+    printf("String y = %s @ %p\n", p1str_str(y), (void *) y);
+    p1str_del(x);
+    printf("String y = %s @ %p\n", p1str_str(y), (void *) y);
+    p1str_del(y);
 }
