@@ -3,16 +3,14 @@
 #include <math.h>
 #include <string.h>
 
-struct HashMapEntry
-{
+struct HashMapEntry {
     char *key;
     int value;
     struct HashMapEntry *__prev;
     struct HashMapEntry *__next;
 };
 
-struct HashMap
-{
+struct HashMap {
     int __buckets;
     struct HashMapEntry *__heads[8];
     struct HashMapEntry *__tails[8];
@@ -26,8 +24,7 @@ struct HashMap
     void (*del)(struct HashMap *self);
 };
 
-struct HashMapIter
-{
+struct HashMapIter {
     int __bucket;
     struct HashMap *__map;
     struct HashMapEntry *__current;
@@ -36,13 +33,11 @@ struct HashMapIter
     void (*del)(struct HashMapIter *self);
 };
 
-void __HashMapIter_del(struct HashMapIter *self)
-{
+void __HashMapIter_del(struct HashMapIter *self) {
     free((void *)self);
 }
 
-struct HashMapEntry *__HashMapIter_next(struct HashMapIter *self)
-{
+struct HashMapEntry *__HashMapIter_next(struct HashMapIter *self) {
     struct HashMapEntry *retval;
 
     while (self->__current == NULL) {
@@ -57,8 +52,7 @@ struct HashMapEntry *__HashMapIter_next(struct HashMapIter *self)
     return retval;
 }
 
-struct HashMapIter *__HashMapIter_new(struct HashMap *map)
-{
+struct HashMapIter *__HashMapIter_new(struct HashMap *map) {
     struct HashMapIter *iter = malloc(sizeof(*iter));
 
     iter->__map = map;
@@ -70,18 +64,15 @@ struct HashMapIter *__HashMapIter_new(struct HashMap *map)
     return iter;
 }
 
-void __HashMap_del(struct HashMap *self)
-{
+void __HashMap_del(struct HashMap *self) {
     free((void *)self);
 }
 
-int __HashMap_size(struct HashMap *self)
-{
+int __HashMap_size(struct HashMap *self) {
     return self->__count;
 }
 
-int getBucket(char *str, int buckets)
-{
+int getBucket(char *str, int buckets) {
     unsigned int hash = 123456;
     printf("\nHashing %s\n", str);
     if (str == NULL)
@@ -94,8 +85,7 @@ int getBucket(char *str, int buckets)
     return hash % buckets;
 }
 
-struct HashMapEntry *__HashMap_find(struct HashMap *self, char *key, int bucket)
-{
+struct HashMapEntry *__HashMap_find(struct HashMap *self, char *key, int bucket) {
     struct HashMapEntry *cur;
     if (self == NULL || key == NULL)
         return NULL;
@@ -107,8 +97,7 @@ struct HashMapEntry *__HashMap_find(struct HashMap *self, char *key, int bucket)
     return NULL;
 }
 
-int __HashMap_get(struct HashMap *self, char *key, int def)
-{
+int __HashMap_get(struct HashMap *self, char *key, int def) {
     int bucket = getBucket(key, self->__buckets);
     struct HashMapEntry *retval = __HashMap_find(self, key, bucket);
     if (retval == NULL)
@@ -116,8 +105,7 @@ int __HashMap_get(struct HashMap *self, char *key, int def)
     return retval->value;
 }
 
-void __HashMap_put(struct HashMap *self, char *key, int value)
-{
+void __HashMap_put(struct HashMap *self, char *key, int value) {
     int bucket;
     struct HashMapEntry *old, *new;
     char *new_key;
@@ -146,8 +134,7 @@ void __HashMap_put(struct HashMap *self, char *key, int value)
     self->__count++;
 }
 
-void __HashMap_dump(struct HashMap *self)
-{
+void __HashMap_dump(struct HashMap *self) {
     int i;
     struct HashMapEntry *cur;
 
@@ -162,8 +149,7 @@ void __HashMap_dump(struct HashMap *self)
     }
 }
 
-struct HashMap *HashMap_new()
-{
+struct HashMap *HashMap_new() {
     struct HashMap *p = malloc(sizeof(*p));
 
     p->__buckets = 8;
@@ -184,8 +170,7 @@ struct HashMap *HashMap_new()
     return p;
 }
 
-int main()
-{
+int main() {
     struct HashMap *map = HashMap_new();
     map->put(map, "Danny", 1);
     map->put(map, "Lindsey", 2);
